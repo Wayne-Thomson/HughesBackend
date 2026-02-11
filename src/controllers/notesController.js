@@ -11,11 +11,12 @@ const handleError = (res, error, message) => {
   res.status(500).json({ message, error: error?.message });
 };
 
-export const getAllNotes = async (_, res) => {
+export const getAllNotes = async (req, res) => {
   try {
     console.log("Fetching all notes from the database.");
     const notes = await Note.find({}).sort({ createdAt: -1 });
-    res.status(200).json(notes);
+    console.log("Sending Response.");
+    res.status(200).json({ testing: "Notes fetched successfully" });
   } catch (error) {
     handleError(res, error, 'Error retrieving notes');
   }
