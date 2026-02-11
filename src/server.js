@@ -30,6 +30,14 @@ app.use(rateLimiter);
 // Notes routes for /api/notes endpoint.
 app.use("/api/notes", notesRoutes);
 
+app.use("/api/vehicle", notesRoutes);
+
+app.use("/api/vehicles", notesRoutes);
+
+app.use("/api/user", notesRoutes);
+
+app.use("/api/users", notesRoutes);
+
 // Start the server after successful database connection.
 connectDB().then(() => {
   console.log("Connected to the database successfully.");
