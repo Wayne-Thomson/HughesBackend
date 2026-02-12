@@ -1,5 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
+import Vehicle from '../models/Vehicle.js';
 
 // Load environment variables from .env file.
 dotenv.config();
@@ -17,8 +18,8 @@ const handleError = (res, error, message) => {
 
 export const getVehicles = async (req, res) => {
   try {
-
-    res.status(200).json({ message: 'Vehicles retrieved successfully', data: [] });
+    const vehicles = await Vehicle.find({ isDeleted: false }).sort({ createdAt: -1 });
+    res.status(200).json({ message: 'Vehicles retrieved successfully', data: vehicles });
   } catch (error) {
     handleError(res, error, 'Error getting vehicles');
   }
@@ -54,23 +55,19 @@ export const createVehicleREG = async (req, res) => {
     const clientId = process.env.ClientID;
     const clientSecret = process.env.ClientSecret;
     const scopeURL = process.env.ScopeURL;
-
     let headers = {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-    };
-    
+    };    
     let payload = { 
       grant_type: 'client_credentials',
       client_id: clientId,
       client_secret: clientSecret,
       scope: scopeURL    
-    };
-  
+    };  
     console.log('Requesting access token from Microsoft Identity Platform...');
     const { data: accessTokenData } = await axios.post(microstoftTokenURL, payload, headers);    
-    console.log('token API response:', accessTokenData);
 
     // Extract access token from response and check if it exists
     accessToken = accessTokenData.access_token;
@@ -86,13 +83,32 @@ export const createVehicleREG = async (req, res) => {
       },
     };
 
-    console.log(registrationNumber)
-
+    // Request vehicle data from DVLA API and check if response contains expected data before proceeding
     const { data } = await axios.get(`${DVLAURIlive}/${registrationNumber}`, headers);
+    if (!data?.registrationNumber) { throw new Error('Invalid response from DVLA API'); }
 
-    console.log('DVLA API response:', data);
+    console.log('Creating new vehicle with registration number:', data.registrationNumber);
+    
+    // Create a new vehicle document in the database using the data from the DVLA API response
+    const newVehicle = new Vehicle({
+      registrationNumber: data?.registrationNumber || 'Unknown Registration Number', 
+      vin: data?.vin || 'Unknown VIN',
+      make: data?.make || 'Unknown Make',
+      model: data?.model || 'Unknown Model',
+      firstUsedDate: data?.firstUsedDate || 'Unknown First Used Date',
+      fuelType: data?.fuelType || 'Unknown Fuel Type',
+      primaryColour: data?.primaryColour || 'Unknown Primary Colour',
+      registrationDate: data?.registrationDate || 'Unknown Registration Date',
+      manufactureDate: data?.manufactureDate || 'Unknown Manufacture Date',
+      engineSize: data?.engineSize || 'Unknown Engine Size',
+      hasOutstandingRecall: data?.hasOutstandingRecall || false,
+      motTests: data?.motTests || [], 
+      customNotes: '',
+      createdBy: null,
+    }); 
+    await newVehicle.save();
 
-    res.status(200).json({ message: 'Vehicle created successfully', data: "This is where the DVLA data will go" });
+    res.status(200).json({ message: 'Vehicle created successfully', data: newVehicle });
   } catch (error) {
     // console.log("Error creating vehicle:", error);
     handleError(res, error, 'Error creating vehicle');

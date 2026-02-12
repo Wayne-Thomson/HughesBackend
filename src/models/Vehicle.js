@@ -18,6 +18,7 @@ const vehicleSchema = new mongoose.Schema({
     customNotes: { type: String, required: false },
     isDeleted: { type: Boolean, required: false, default: false },
     deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
 }, { timestamps: true });
 
 // Export the Vehicle model based on the schema.
