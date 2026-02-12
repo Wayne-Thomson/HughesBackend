@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 /**
  * Common error handler for controller responses.
  * @param {Object} res - Express response object.
