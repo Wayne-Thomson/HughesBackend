@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import notesRoutes from './routes/notesRoutes.js';
+import vehicleRoutes from './routes/vehicleRoutes.js';
 import bodyParser from 'body-parser';
 import { connectDB } from './config/db.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
@@ -25,14 +26,12 @@ app.use(bodyParser.json({ limit: "15mb", extended: true}));
 app.use(bodyParser.urlencoded({ limit: "15mb", extended: true}));
 app.use(rateLimiter);
 
-
-
 // Notes routes for /api/notes endpoint.
 app.use("/api/notes", notesRoutes);
 
 app.use("/api/vehicle", notesRoutes);
 
-app.use("/api/vehicles", notesRoutes);
+app.use("/api/vehicles", vehicleRoutes);
 
 app.use("/api/user", notesRoutes);
 
