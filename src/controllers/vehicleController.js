@@ -19,7 +19,7 @@ const handleError = (res, error, message) => {
 export const getVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ isDeleted: false }).sort({ createdAt: -1 });
-    res.status(200).json({ message: 'Vehicles retrieved successfully', data: vehicles });
+    res.status(200).json({ message: 'Vehicles retrieved successfully', vehicles: vehicles });
   } catch (error) {
     handleError(res, error, 'Error getting vehicles');
   }
@@ -87,11 +87,11 @@ export const createVehicleREG = async (req, res) => {
     const { data } = await axios.get(`${DVLAURIlive}/${registrationNumber}`, headers);
     if (!data?.registration) { throw new Error('Invalid response from DVLA API'); }
 
-    console.log('Creating new vehicle with registration number:', data.registrationNumber);
+    console.log('Creating new vehicle with registration number:', data.registration);
     
     // Create a new vehicle document in the database using the data from the DVLA API response
     const newVehicle = new Vehicle({
-      registrationNumber: data?.registration || 'Unknown Registration Number', 
+      registration: data?.registration || 'Unknown Registration Number', 
       vin: data?.vin || 'Unknown VIN',
       make: data?.make || 'Unknown Make',
       model: data?.model || 'Unknown Model',
@@ -101,14 +101,14 @@ export const createVehicleREG = async (req, res) => {
       registrationDate: data?.registrationDate || 'Unknown Registration Date',
       manufactureDate: data?.manufactureDate || 'Unknown Manufacture Date',
       engineSize: data?.engineSize || 'Unknown Engine Size',
-      hasOutstandingRecall: data?.hasOutstandingRecall || false,
+      hasOutstandingRecall: data?.hasOutstandingRecall || 'false',
       motTests: data?.motTests || [], 
       customNotes: '',
       createdBy: null,
     }); 
     await newVehicle.save();
 
-    res.status(200).json({ message: 'Vehicle created successfully', data: newVehicle });
+    res.status(200).json({ message: 'Vehicle created successfully', newVehicle: newVehicle });
   } catch (error) {
     // console.log("Error creating vehicle:", error);
     handleError(res, error, 'Error creating vehicle');
