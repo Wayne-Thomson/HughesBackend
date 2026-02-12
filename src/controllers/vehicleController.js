@@ -1,3 +1,14 @@
+/**
+ * Common error handler for controller responses.
+ * @param {Object} res - Express response object.
+ * @param {Error} error - The error object.
+ * @param {string} message - Custom error message.
+ */
+const handleError = (res, error, message) => {
+  console.error(message, error?.message);
+  res.status(500).json({ message, error: error?.message });
+};
+
 export const getVehicles = async (req, res) => {
   try {
 
@@ -27,7 +38,7 @@ export const createVehicleREG = async (req, res) => {
   try {
 
     // DVLA API integration using the registration number provided in the request body
-    const { registrationNumber } = req.body;
+    const { registrationNumber: _id } = req.params;
     const liveApi = process.env.APIkey;
     const DVLAURIlive = 'https://api.dvla.gov.uk/v1/vehicles';
     let accessToken = '';

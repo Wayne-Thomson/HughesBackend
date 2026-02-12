@@ -6,8 +6,8 @@ const router = express.Router();
 // Example with authUser middleware placeholder
 // router.get('/', auth, furtherHandlerFunction);
 
-router.get('/createvehiclereg', createVehicleREG);
-router.get('/createvehiclevin', createVehicleVIN);
+router.get('/createvehiclereg/:id', createVehicleREG);
+router.get('/createvehiclevin/:id', createVehicleVIN);
 router.get('/updatevehicle/:id', updateAVehicle);
 router.get('/deletedvehicles', getDeletedVehicles);
 router.get('/vehicle/:id', getVehicle);
