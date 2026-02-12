@@ -1,6 +1,7 @@
 export const getVehicles = async (req, res) => {
   try {
 
+    res.status(200).json({ message: 'Vehicles retrieved successfully', data: [] });
   } catch (error) {
     handleError(res, error, 'Error getting vehicles');
   }
@@ -56,7 +57,7 @@ export const createVehicleREG = async (req, res) => {
     
     console.log('token API response:', data);
 
-    res.status(200).json({ message: 'Note deleted successfully', data: "This is where the DVLA data will go" });
+    res.status(200).json({ message: 'Vehicle created successfully', data: "This is where the DVLA data will go" });
   } catch (error) {
     handleError(res, error, 'Error creating vehicle');
   }

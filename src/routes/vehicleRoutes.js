@@ -11,6 +11,6 @@ router.get('/createvehiclevin', createVehicleVIN);
 router.get('/updatevehicle/:id', updateAVehicle);
 router.get('/deletedvehicles', getDeletedVehicles);
 router.get('/vehicle/:id', getVehicle);
-router.get('/vehicles', getVehicles);
+router.get('/listall', getVehicles);
 
 export default router;

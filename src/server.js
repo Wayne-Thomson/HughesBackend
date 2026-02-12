@@ -29,9 +29,7 @@ app.use(rateLimiter);
 // Notes routes for /api/notes endpoint.
 app.use("/api/notes", notesRoutes);
 
-app.use("/api/vehicle", notesRoutes);
-
-app.use("/api/vehicles", vehicleRoutes);
+app.use("/api/vehicle", vehicleRoutes);
 
 app.use("/api/user", notesRoutes);
 
