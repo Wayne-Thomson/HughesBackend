@@ -1,5 +1,5 @@
 import express from 'express';
-import { createVehicleREG, getDeletedVehicles, getVehicle, getVehicles, createVehicleVIN, updateAVehicle } from '../controllers/vehicleController.js';
+import { createVehicleREG, getDeletedVehicles, getVehicle, getVehicles, createVehicleVIN, updateAVehicle, deleteAVehicle, hardDeleteAVehicle, restoreAVehicle } from '../controllers/vehicleController.js';
 
 const router = express.Router();
 
@@ -12,5 +12,8 @@ router.put('/updatevehicle/:id', updateAVehicle);
 router.delete('/deletedvehicles', getDeletedVehicles);
 router.get('/vehicle/:id', getVehicle);
 router.get('/listall', getVehicles);
+router.delete('/delete/:id', deleteAVehicle);
+router.delete('/harddelete/:id', hardDeleteAVehicle);
+router.put('/restore/:id', restoreAVehicle);
 
 export default router;
