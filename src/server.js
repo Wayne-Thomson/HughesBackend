@@ -35,7 +35,7 @@ connectDB().then(() => {
   console.log("Connected to the database successfully.");
   app.listen(PORT, () => {
     console.log(`Server running on port: ${PORT}`);
-});
+  });
 }).catch((error) => {
   console.error("Database connection failed:", error);
   process.exit(1); // Exit the process with failure.
