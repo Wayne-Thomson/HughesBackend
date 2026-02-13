@@ -1,19 +1,20 @@
 import express from 'express';
 import { createVehicleREG, getDeletedVehicles, getVehicle, getVehicles, createVehicleVIN, updateAVehicle, deleteAVehicle, hardDeleteAVehicle, restoreAVehicle } from '../controllers/vehicleController.js';
+import { authUser } from '../middleware/authUser.js';
 
 const router = express.Router();
 
 // Example with authUser middleware placeholder
 // router.get('/', auth, furtherHandlerFunction);
 
-router.post('/createvehiclereg/:id', createVehicleREG);
-router.post('/createvehiclevin/:id', createVehicleVIN);
-router.put('/updatevehicle/:id', updateAVehicle);
-router.delete('/deletedvehicles', getDeletedVehicles);
-router.get('/vehicle/:id', getVehicle);
-router.get('/listall', getVehicles);
-router.delete('/delete/:id', deleteAVehicle);
-router.delete('/harddelete/:id', hardDeleteAVehicle);
-router.put('/restore/:id', restoreAVehicle);
+router.post('/createvehiclereg/:id', authUser, createVehicleREG);
+router.post('/createvehiclevin/:id', authUser, createVehicleVIN);
+router.put('/updatevehicle/:id', authUser, updateAVehicle);
+router.delete('/deletedvehicles', authUser, getDeletedVehicles);
+router.get('/vehicle/:id', authUser, getVehicle);
+router.get('/listall', authUser, getVehicles);
+router.delete('/delete/:id', authUser, deleteAVehicle);
+router.delete('/harddelete/:id', authUser, hardDeleteAVehicle);
+router.put('/restore/:id', authUser, restoreAVehicle);
 
 export default router;
