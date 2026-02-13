@@ -214,12 +214,14 @@ export const updateAVehicle = async (req, res) => {
 
 export const deleteAVehicle = async (req, res) => {
   try {
-    const { id } = req.params;
-    const vehicle = await Vehicle.findOneAndUpdate({ _id: id }, { isDeleted: true, deletedBy: null }, { new: true });
-    if (!vehicle) {
-      return res.status(404).json({ message: 'Vehicle not found' });
-    };
-    res.status(200).json({ message: 'Vehicle deleted successfully', vehicle: vehicle });
+    const { id } = req?.params;
+    const { hardDelete } = req?.body;
+    // const vehicle = await Vehicle.findOneAndUpdate({ _id: id }, { isDeleted: true, deletedBy: null }, { new: true });
+    // if (!vehicle) {
+    //   return res.status(404).json({ message: 'Vehicle not found' });
+    // };
+    console.log('Vehicle to be deleted:', req?.body);
+    res.status(200).json({ message: 'Vehicle deleted successfully', });
   } catch (error) {
     handleError(res, error, 'Error deleting vehicle');
   };

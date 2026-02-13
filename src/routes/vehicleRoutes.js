@@ -17,7 +17,7 @@ router.get('/vehicle/:id', authUser, getVehicle);
 router.put('/updatevehicle/:id', authUser, updateAVehicle);
 
 // Soft delete, hard delete, and restore routes for vehicles
-router.delete('/delete/:id', authUser, hardDeleteAVehicle);
+router.delete('/delete/:id', authUser, deleteAVehicle);
 router.put('/delete/:id', authUser, deleteAVehicle);
 router.put('/restore/:id', authUser, restoreAVehicle);
 
