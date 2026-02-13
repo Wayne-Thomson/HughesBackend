@@ -4,17 +4,21 @@ import { authUser } from '../middleware/authUser.js';
 
 const router = express.Router();
 
-// Example with authUser middleware placeholder
-// router.get('/', auth, furtherHandlerFunction);
-
+// Create routes for vehicles
 router.post('/createvehiclereg/:id', authUser, createVehicleREG);
 router.post('/createvehiclevin/:id', authUser, createVehicleVIN);
-router.put('/updatevehicle/:id', authUser, updateAVehicle);
-router.delete('/deletedvehicles', authUser, getDeletedVehicles);
-router.get('/vehicle/:id', authUser, getVehicle);
+
+// Read routes for vehicles
+router.get('/deletedvehicles', authUser, getDeletedVehicles);
 router.get('/listall', authUser, getVehicles);
-router.delete('/delete/:id', authUser, deleteAVehicle);
-router.delete('/harddelete/:id', authUser, hardDeleteAVehicle);
+router.get('/vehicle/:id', authUser, getVehicle);
+
+// Update route for vehicles
+router.put('/updatevehicle/:id', authUser, updateAVehicle);
+
+// Soft delete, hard delete, and restore routes for vehicles
+router.delete('/delete/:id', authUser, hardDeleteAVehicle);
+router.put('/delete/:id', authUser, deleteAVehicle);
 router.put('/restore/:id', authUser, restoreAVehicle);
 
 export default router;

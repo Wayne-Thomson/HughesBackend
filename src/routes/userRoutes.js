@@ -4,13 +4,12 @@ import { authUser } from '../middleware/authUser.js';
 
 const router = express.Router();
 
-// Example with authUser middleware placeholder
-// router.get('/', auth, furtherHandlerFunction);
-
+// Login route for users
 router.get('/login', loginUser);
+
+// Create, update, and delete routes for users
 router.post('/create', authUser, createUser);
 router.put('/update', authUser, updateUser);
 router.delete('/delete', authUser, deleteUser);
-
 
 export default router;
