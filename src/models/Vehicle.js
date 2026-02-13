@@ -17,6 +17,7 @@ const vehicleSchema = new mongoose.Schema({
     motTests: { type: Array, required: false },
     customNotes: { type: String, required: false },
     isDeleted: { type: Boolean, required: false, default: false },
+    dateDeleted: { type: Date, required: false },
     deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
 }, { timestamps: true });

@@ -30,7 +30,7 @@ export const getVehicles = async (req, res) => {
 
 export const getDeletedVehicles = async (req, res) => {
   try {
-    const vehicles = await Vehicle.find({ isDeleted: true }).sort({ createdAt: -1 });
+    const vehicles = await Vehicle.find({ isDeleted: true }).sort({ dateDeleted: -1 });
     res.status(200).json({ message: 'Vehicles retrieved successfully', vehicles: vehicles });
   } catch (error) {
     handleError(res, error, 'Error getting deleted vehicles');
@@ -223,7 +223,7 @@ export const deleteAVehicle = async (req, res) => {
     if (hardDelete) {
       vehicle = await Vehicle.findByIdAndDelete({ _id: id });
     } else {
-      vehicle = await Vehicle.findOneAndUpdate({ _id: id }, { isDeleted: true, deletedBy: null }, { new: true });
+      vehicle = await Vehicle.findOneAndUpdate({ _id: id }, { isDeleted: true, deletedBy: null, dateDeleted: new Date() }, { new: true });
     }
     if (!vehicle) {
       return res.status(404).json({ message: 'Vehicle not found' });
@@ -251,7 +251,7 @@ export const hardDeleteAVehicle = async (req, res) => {
 export const restoreAVehicle = async (req, res) => {
   try {
     const { id } = req.params;
-    const vehicle = await Vehicle.findOneAndUpdate({ _id: id }, { isDeleted: false, deletedBy: null }, { new: true });
+    const vehicle = await Vehicle.findOneAndUpdate({ _id: id }, { isDeleted: false, deletedBy: null, dateDeleted: null }, { new: true });
     if (!vehicle) {
       return res.status(404).json({ message: 'Vehicle not found' });
     }
