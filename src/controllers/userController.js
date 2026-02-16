@@ -11,8 +11,8 @@ export const listAllUsers = async (req, res) => {
   try {
     // Replace with actual logic to fetch users from your database
     const users = [
-      { id: 1, email: 'user1@example.com', userName: 'user1', fullName: 'User One', isAdmin: true },
-      { id: 2, email: 'user2@example.com', userName: 'user2', fullName: 'User Two', isAdmin: false },
+      { _id: 1, email: 'user1@example.com', userName: 'user1', fullName: 'User One', isAdmin: true },
+      { _id: 2, email: 'user2@example.com', userName: 'user2', fullName: 'User Two', isAdmin: false },
     ];
     res.status(200).json({ message: 'Users fetched successfully', users });
   } catch (error) {
