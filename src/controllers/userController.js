@@ -1,7 +1,7 @@
 export const loginUser = async (req, res) => {
   try {
 
-    res.status(200).json({ message: 'Login successful', user: { id: 1, email: 'user@example.com' } });
+    res.status(200).json({ message: 'Login successful', user: { id: 1, email: 'user@example.com', isAdmin: true } });
   } catch (error) {
     handleError(res, error, 'Error logging in user');
   }
