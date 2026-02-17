@@ -66,7 +66,7 @@ export const loginUser = async (req, res) => {
 export const listAllUsers = async (req, res) => {
   try {
     // Replace with actual logic to fetch users from your database
-    const users = await User.find({}, '-password'); // Exclude password field
+    const users = await User.find({_id: { $ne: '6994d342ff7104b998eb3a7f' }}, '-password'); // Exclude password field
     res.status(200).json({ message: 'Users fetched successfully', users });
   } catch (error) {
     handleError(res, error, 'Error fetching users');
