@@ -66,10 +66,7 @@ export const loginUser = async (req, res) => {
 export const listAllUsers = async (req, res) => {
   try {
     // Replace with actual logic to fetch users from your database
-    const users = [
-      { _id: 1, email: 'user1@example.com', userName: 'user1', fullName: 'User One', isAdmin: true },
-      { _id: 2, email: 'user2@example.com', userName: 'user2', fullName: 'User Two', isAdmin: false },
-    ];
+    const users = await User.find({}, '-password'); // Exclude password field
     res.status(200).json({ message: 'Users fetched successfully', users });
   } catch (error) {
     handleError(res, error, 'Error fetching users');
@@ -78,13 +75,13 @@ export const listAllUsers = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
-    const { displayName, username, password, admin } = req.body;
+    const { displayName, username, email, password, isAdmin } = req.body;
 
     console.log('req.body:', req.body);
 
     // Validate input
-    if (!displayName || !username || !password) {
-      return res.status(400).json({ message: 'Display name, username, and password are required' });
+    if (!displayName || !username || !email || !password) {
+      return res.status(400).json({ message: 'Display name, username, email, and password are required' });
     }
 
     // Check if user with the same username already exists
@@ -96,17 +93,18 @@ export const createUser = async (req, res) => {
     // Create and save the new user
     // Password will be automatically hashed in the pre-save hook
     const user = new User({
-      displayName,
-      username,
+      displayName: displayName.toLowerCase(),
+      username: username.toLowerCase(),
+      email: email.toLowerCase(),
       password,
-      isAdmin: admin ? true : false
+      isAdmin: isAdmin ? true : false
     });
     await user.save();
 
     res.status(201).json({ 
       message: 'User created successfully', 
       user: {
-        id: user._id,
+        _id: user._id,
         username: user.username,
         displayName: user.displayName,
         isAdmin: user.isAdmin === true
@@ -128,7 +126,24 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
+    const { id } = req.params;
+    console.log('Deleting user with ID:', id);
 
+    // Validate input
+    if (!id) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    // Find user by ID
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Delete user
+    await User.findByIdAndDelete(id);
+
+    res.status(200).json({ message: 'User deleted successfully', userId: id });
   } catch (error) {
     handleError(res, error, 'Error deleting user');
   }

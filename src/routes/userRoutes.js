@@ -12,7 +12,7 @@ router.get('/listall', authUser, listAllUsers);
 
 // Create, update, and delete routes for users
 router.post('/create', authUser, createUser);
-router.put('/update', authUser, updateUser);
-router.delete('/delete', authUser, deleteUser);
+router.put('/:id', authUser, updateUser);
+router.delete('/:id', authUser, deleteUser);
 
 export default router;
