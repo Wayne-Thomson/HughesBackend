@@ -18,34 +18,35 @@ const handleError = (res, error, message) => {
 
 export const loginUser = async (req, res) => {
   try {
-        res.status(200).json({ 
-      message: 'Login successful', 
-      user: { 
-        id: '123456789', 
-        username: 'testuser',
-        displayName: 'testuser',
-        isAdmin: true
-      } 
-    });
+    //     res.status(200).json({ 
+    //   message: 'Login successful', 
+    //   user: { 
+    //     id: '123456789', 
+    //     username: 'testuser',
+    //     displayName: 'testuser',
+    //     isAdmin: true
+    //   } 
+    // });
+    console.log(req.body);
 
+    const { email, password } = req.body;
 
-    const { username, password } = req.body;
 
     // Validate input
-    if (!username || !password) {
-      return res.status(400).json({ message: 'Username and password are required' });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
     }
-
-    // Find user by username
-    const user = await User.findOne({ username });
+    
+    // Find user by email
+    const user = await User.findOne({ email, isActive: 'enabled' });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid username or password' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     // Compare password using the model method
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid username or password' });
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     // Return user data (exclude password)
@@ -67,6 +68,7 @@ export const listAllUsers = async (req, res) => {
   try {
     // Replace with actual logic to fetch users from your database
     const users = await User.find({_id: { $ne: '6994d342ff7104b998eb3a7f' }}, '-password'); // Exclude password field
+    console.log('Fetched users:', users);
     res.status(200).json({ message: 'Users fetched successfully', users });
   } catch (error) {
     handleError(res, error, 'Error fetching users');
@@ -97,7 +99,7 @@ export const createUser = async (req, res) => {
       username: username.toLowerCase(),
       email: email.toLowerCase(),
       password,
-      isAdmin: isAdmin ? true : false
+      isAdmin: isAdmin ? true : false,
     });
     await user.save();
 
@@ -116,13 +118,73 @@ export const createUser = async (req, res) => {
   }
 }
 
+export const toggleDisable = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Validate input
+    if (!id) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+    // Find user by ID
+    const user = await User.findById(id, '-password'); // Exclude password field
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // Toggle disabled status
+    user.isActive = user.isActive === 'enabled' ? 'disabled' : 'enabled';
+    await user.save();
+    res.status(200).json({ message: `User ${user.isActive === 'disabled' ? 'disabled' : 'enabled'} successfully`, user: user });
+  } catch (error) {
+    handleError(res, error, 'Error toggling user status');
+  }
+};
+
 export const updateUser = async (req, res) => {
   try {
-
+    const { id } = req.params;
+    const { displayName, email, isAdmin } = req.body;
+    // Validate input
+    if (!id || !displayName || !email) {
+      return res.status(400).json({ message: 'User ID, display name, and email are required' });
+    }
+    // Find user by ID
+    const user = await User.findById(id, '-password'); // Exclude password field
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // Update user fields
+    user.displayName = displayName.toLowerCase();
+    user.email = email.toLowerCase();
+    user.isAdmin = isAdmin ? true : false;
+    await user.save();
+    res.status(200).json({ message: 'User updated successfully', user: user });    
   } catch (error) {
     handleError(res, error, 'Error updating user');
   }
-}
+};
+
+export const changeUserPassword = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+    // Validate input
+    if (!id || !password) {
+      return res.status(400).json({ message: 'User ID and new password are required' });
+    }
+    // Find user by ID
+    const user = await User.findById(id, '-password'); // Exclude password field
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // Update password (will be hashed in pre-save hook)
+    user.password = password;
+    await user.save();
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.log('Error in changeUserPassword:', error);
+    handleError(res, error, 'Error changing user password');
+  }
+};
 
 export const deleteUser = async (req, res) => {
   try {
@@ -135,7 +197,7 @@ export const deleteUser = async (req, res) => {
     }
 
     // Find user by ID
-    const user = await User.findById(id);
+    const user = await User.findById(id, '-password'); // Exclude password field
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
