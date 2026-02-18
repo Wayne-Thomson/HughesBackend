@@ -1,12 +1,11 @@
 import express from 'express';
-import { createVehicleREG, getDeletedVehicles, getVehicle, getVehicles, createVehicleVIN, updateAVehicle, deleteAVehicle, hardDeleteAVehicle, restoreAVehicle } from '../controllers/vehicleController.js';
+import { addNewVehicle, getDeletedVehicles, getVehicle, getVehicles, updateAVehicle, deleteAVehicle, hardDeleteAVehicle, restoreAVehicle } from '../controllers/vehicleController.js';
 import { authUser } from '../middleware/authUser.js';
 
 const router = express.Router();
 
 // Create routes for vehicles
-router.post('/createvehiclereg/:id', authUser, createVehicleREG);
-router.post('/createvehiclevin/:id', authUser, createVehicleVIN);
+router.post('/add', authUser, addNewVehicle);
 
 // Read routes for vehicles
 router.get('/deletedvehicles', authUser, getDeletedVehicles);

@@ -50,10 +50,30 @@ export const getVehicle = async (req, res) => {
   };
 };
 
-export const createVehicleREG = async (req, res) => {
+export const addNewVehicle = async (req, res) => {
+  try {
+    const { registration, vin } = req.body;
+    if (!registration && !vin) {
+      return res.status(400).json({ message: 'Vehicle registration or VIN is required' });
+    }
+
+    let newVehicle;
+    if (registration) {
+      newVehicle = await createVehicleREG(registration, res);
+    } else if (vin) {
+      newVehicle = await createVehicleVIN(vin, res);
+    }
+
+    res.status(200).json({ message: 'Vehicle created successfully', newVehicle: newVehicle });
+  } catch (error) {
+    handleError(res, error, 'Error adding new vehicle');
+  }
+};
+
+const createVehicleREG = async (registration, res) => {
   try {
     // DVLA API integration using the registration number provided in the request body
-    const { id: registrationNumber } = req.params;
+    const registrationNumber = registration;
     const liveApi = process.env.APIkey;
     const DVLAURIlive = 'https://history.mot.api.gov.uk/v1/trade/vehicles/registration';
     let accessToken = '';
@@ -116,17 +136,16 @@ export const createVehicleREG = async (req, res) => {
     }); 
     await newVehicle.save();
 
-    res.status(200).json({ message: 'Vehicle created successfully', newVehicle: newVehicle });
+    return newVehicle;
   } catch (error) {
-    // console.log("Error creating vehicle:", error);
-    handleError(res, error, 'Error creating vehicle');
+    throw error; // Let the calling function handle the error and response
   };
 };
 
-export const createVehicleVIN = async (req, res) => {
+const createVehicleVIN = async (vin, res) => {
   try {
     // DVLA API integration using the registration number provided in the request body
-    const { id: VIN } = req.params;
+    const VIN = vin;
     const liveApi = process.env.APIkey;
     const DVLAURIlive = 'https://history.mot.api.gov.uk/v1/trade/vehicles/vin';
     let accessToken = '';
@@ -189,10 +208,9 @@ export const createVehicleVIN = async (req, res) => {
     }); 
     await newVehicle.save();
 
-    res.status(200).json({ message: 'Vehicle created successfully', newVehicle: newVehicle });
+    return newVehicle;
   } catch (error) {
-    console.log("Error creating vehicle:", error);
-    handleError(res, error, 'Error creating vehicle');
+    throw error; // Let the calling function handle the error and response
   };
 };
 
