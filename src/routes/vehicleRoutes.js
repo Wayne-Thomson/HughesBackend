@@ -13,7 +13,7 @@ router.get('/listall', authUser, getVehicles);
 router.get('/vehicle/:id', authUser, getVehicle);
 
 // Update route for vehicles
-router.put('/updatevehicle/:id', authUser, updateAVehicle);
+router.put('/updateNote/:id', authUser, updateAVehicle);
 
 // Soft delete, hard delete, and restore routes for vehicles
 router.delete('/delete/:id', authUser, deleteAVehicle);

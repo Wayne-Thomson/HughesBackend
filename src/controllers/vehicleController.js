@@ -216,6 +216,7 @@ const createVehicleVIN = async (vin, res) => {
 
 export const updateAVehicle = async (req, res) => {
   try {
+    console.log('Received request to update vehicle with ID:', req?.params?.id, 'and body:', req?.body);
     const { id } = req.params;
     const { customNotes } = req.body;
     const vehicle = await Vehicle.findById(id);
