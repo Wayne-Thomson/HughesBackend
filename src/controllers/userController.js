@@ -21,19 +21,7 @@ const handleError = (res, error, message) => {
 
 export const loginUser = async (req, res) => {
   try {
-    //     res.status(200).json({ 
-    //   message: 'Login successful', 
-    //   user: { 
-    //     id: '123456789', 
-    //     username: 'testuser',
-    //     displayName: 'testuser',
-    //     isAdmin: true
-    //   } 
-    // });
-    console.log(req.body);
-
     const { email, password } = req.body;
-
 
     // Validate input
     if (!email || !password) {
