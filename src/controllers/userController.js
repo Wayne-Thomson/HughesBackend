@@ -1,8 +1,11 @@
 import User from "../models/User.js";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 
 // Load environment variables from .env file.
 dotenv.config();
+
+
 
 /**
  * Common error handler for controller responses.
@@ -49,6 +52,17 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    const token = jwt.sign(
+      {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName,
+        isAdmin: user.isAdmin === true
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "12h" }
+    );
+
     // Return user data (exclude password)
     res.status(200).json({ 
       message: 'Login successful', 
@@ -56,7 +70,8 @@ export const loginUser = async (req, res) => {
         id: user._id, 
         username: user.username,
         displayName: user.displayName,
-        isAdmin: user.isAdmin === true
+        isAdmin: user.isAdmin === true,
+        token
       } 
     });
   } catch (error) {
