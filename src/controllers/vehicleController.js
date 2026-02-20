@@ -116,7 +116,7 @@ const createVehicleREG = async (registration, res) => {
     if (!data?.registration) { throw new Error('Invalid response from DVLA API'); }
 
     console.log('Creating new vehicle with registration number:', data.registration);
-    
+    console.log('DVLA API response data:', data);
     // Create a new vehicle document in the database using the data from the DVLA API response
     const newVehicle = new Vehicle({
       registration: data?.registration || 'Unknown Registration Number', 
@@ -187,7 +187,8 @@ const createVehicleVIN = async (vin, res) => {
     const { data } = await axios.get(`${DVLAURIlive}/${VIN}`, headers);
     if (!data?.registration) { throw new Error('Invalid response from DVLA API'); }
 
-    console.log('Creating new vehicle with registration number:', data.registration);
+    console.log('DVLA API response data:', data);
+    // console.log('Creating new vehicle with registration number:', data.registration);
     
     // Create a new vehicle document in the database using the data from the DVLA API response
     const newVehicle = new Vehicle({
