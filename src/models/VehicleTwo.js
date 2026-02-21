@@ -217,7 +217,7 @@ const vehicleTwoSchema = new mongoose.Schema({
     customNotes: { type: String, required: false },
     generation: { type: String, required: false },
     country: { type: String, required: false },
-    EngineCode: { type: String, required: false },
+    engineCode: { type: String, required: false },
 }, { timestamps: true });
 
 // Export the VehicleTwo model based on the schema.

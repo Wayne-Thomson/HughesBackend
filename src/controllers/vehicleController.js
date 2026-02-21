@@ -714,7 +714,7 @@ const newCreateTestDataSet = async (req, res) => {
           engineSize: engineCapacity.toString(),
           isDeleted,
           dateDeleted,
-          EngineCode: EngineNumber,
+          engineCode: EngineNumber,
           VehicleRegistration: {
             DateOfLastUpdate: new Date(),
             Colour: colour,
