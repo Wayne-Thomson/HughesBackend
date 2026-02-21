@@ -1,6 +1,9 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import Vehicle from '../models/Vehicle.js';
+import User from '../models/User.js';
+import { authenticateUser } from '../helpers/authHelper.js';
 
 // Load environment variables from .env file.
 dotenv.config();
@@ -18,6 +21,9 @@ const handleError = (res, error, message) => {
 
 export const getVehicles = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res);
+    if (!checkAuthenticatedUser) return;
+
     const vehicles = await Vehicle.find({ isDeleted: false }).sort({ createdAt: -1 });
     if (!vehicles) {
       return res.status(404).json({ message: 'No vehicles found' });
@@ -30,6 +36,9 @@ export const getVehicles = async (req, res) => {
 
 export const getDeletedVehicles = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res);
+    if (!checkAuthenticatedUser) return;
+
     const vehicles = await Vehicle.find({ isDeleted: true }).sort({ dateDeleted: -1 });
     res.status(200).json({ message: 'Vehicles retrieved successfully', vehicles: vehicles });
   } catch (error) {
@@ -39,6 +48,9 @@ export const getDeletedVehicles = async (req, res) => {
 
 export const getVehicle = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res);
+    if (!checkAuthenticatedUser) return;
+
     const { id } = req.params;
     const vehicle = await Vehicle.findById(id);
     if (!vehicle) {
@@ -52,6 +64,9 @@ export const getVehicle = async (req, res) => {
 
 export const addNewVehicle = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res);
+    if (!checkAuthenticatedUser) return;
+
     const { registration, vin } = req.body;
     if (!registration && !vin) {
       return res.status(400).json({ message: 'Vehicle registration or VIN is required' });
@@ -217,6 +232,9 @@ const createVehicleVIN = async (vin, res) => {
 
 export const updateAVehicle = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res);
+    if (!checkAuthenticatedUser) return;
+
     console.log('Received request to update vehicle with ID:', req?.params?.id, 'and body:', req?.body);
     const { id } = req.params;
     const { customNotes } = req.body;
@@ -234,6 +252,9 @@ export const updateAVehicle = async (req, res) => {
 
 export const deleteAVehicle = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res);
+    if (!checkAuthenticatedUser) return;
+
     console.log('Received request to delete vehicle with ID:', req?.params?.id, 'and hardDelete flag:', req?.body?.hardDelete);
     const { id } = req?.params;
     const { hardDelete } = req?.body;
@@ -256,6 +277,9 @@ export const deleteAVehicle = async (req, res) => {
 
 export const hardDeleteAVehicle = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res);
+    if (!checkAuthenticatedUser) return;
+
     const { id } = req.params;
     const vehicle = await Vehicle.findByIdAndDelete(id);
     if (!vehicle) {
@@ -269,6 +293,9 @@ export const hardDeleteAVehicle = async (req, res) => {
 
 export const restoreAVehicle = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res);
+    if (!checkAuthenticatedUser) return;
+
     const { id } = req.params;
     const vehicle = await Vehicle.findOneAndUpdate({ _id: id }, { isDeleted: false, deletedBy: null, dateDeleted: null }, { new: true });
     if (!vehicle) {
@@ -465,4 +492,356 @@ export const createTestDataSet = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error creating test dataset', error: error.message });
   }
-}
+};
+
+export const newCreateTestDataSet = async (req, res) => {
+  try {
+    const checkAuthenticatedUser = await authenticateUser(req, res, true);
+    if (!checkAuthenticatedUser) return;
+
+    function generateVehicles(count = 1000) {
+
+  const makes = {
+    MINI: {
+      models: ["COOPER", "COOPER S", "ONE", "COUNTRYMAN", "CLUBMAN"],
+      series: ["R50", "R53", "R56", "F55", "F56", "F60"],
+      origin: "UNITED KINGDOM"
+    },
+    FORD: {
+      models: ["FIESTA", "FOCUS", "KUGA", "MONDEO", "PUMA"],
+      series: ["MK6", "MK7", "MK8", "MK9"],
+      origin: "UNITED KINGDOM"
+    },
+    BMW: {
+      models: ["1 SERIES", "3 SERIES", "5 SERIES", "X1", "X3", "X5"],
+      series: ["E87", "F20", "G20", "F30", "G30"],
+      origin: "GERMANY"
+    },
+    AUDI: {
+      models: ["A1", "A3", "A4", "A6", "Q2", "Q3", "Q5"],
+      series: ["8P", "8V", "B8", "B9", "C7"],
+      origin: "GERMANY"
+    },
+    VOLKSWAGEN: {
+      models: ["POLO", "GOLF", "PASSAT", "TIGUAN", "T-ROC"],
+      series: ["MK5", "MK6", "MK7", "MK8"],
+      origin: "GERMANY"
+    },
+    MERCEDES: {
+      models: ["A CLASS", "C CLASS", "E CLASS", "GLA", "GLC"],
+      series: ["W176", "W205", "W213"],
+      origin: "GERMANY"
+    },
+    TOYOTA: {
+      models: ["YARIS", "COROLLA", "PRIUS", "RAV4", "C-HR"],
+      series: ["XP130", "E210", "XA50"],
+      origin: "JAPAN"
+    },
+    NISSAN: {
+      models: ["MICRA", "QASHQAI", "JUKE", "X-TRAIL", "LEAF"],
+      series: ["K12", "J10", "J11", "ZE1"],
+      origin: "JAPAN"
+    },
+    HYUNDAI: {
+      models: ["I10", "I20", "I30", "TUCSON", "KONA"],
+      series: ["MK1", "MK2", "MK3"],
+      origin: "SOUTH KOREA"
+    },
+    KIA: {
+      models: ["PICANTO", "RIO", "CEED", "SPORTAGE", "NIRO"],
+      series: ["MK1", "MK2", "MK3", "MK4"],
+      origin: "SOUTH KOREA"
+    },
+    PEUGEOT: {
+      models: ["108", "208", "308", "2008", "3008", "5008"],
+      series: ["MK1", "MK2"],
+      origin: "FRANCE"
+    },
+    SKODA: {
+      models: ["FABIA", "OCTAVIA", "SUPERB", "KAMIQ", "KODIAQ"],
+      series: ["MK1", "MK2", "MK3", "MK4"],
+      origin: "CZECH REPUBLIC"
+    },
+    SEAT: {
+      models: ["IBIZA", "LEON", "ARONA", "ATECA"],
+      series: ["MK3", "MK4"],
+      origin: "SPAIN"
+    },
+    VOLVO: {
+      models: ["V40", "V60", "XC40", "XC60", "XC90"],
+      series: ["P1", "SPA"],
+      origin: "SWEDEN"
+    },
+    TESLA: {
+      models: ["MODEL 3", "MODEL S", "MODEL Y"],
+      series: ["PRE-FACELIFT", "FACELIFT"],
+      origin: "UNITED STATES"
+    }
+  };
+
+      const colours = ["BLACK", "WHITE", "GREY", "BLUE", "RED", "SILVER"];
+      const fuels = ["PETROL", "DIESEL", "HYBRID ELECTRIC"];
+      const letters = "ABCDEFGHJKLMNPRSTUVWXYZ";
+      const numbers = "0123456789";
+
+      const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+      const randNum = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+      const generateUKPlate = (date) => {
+        const year = date.getFullYear().toString().slice(-2);
+        const month = date.getMonth() + 1;
+        const ageId = month >= 3 && month < 9 ? year : (parseInt(year) + 50).toString();
+
+        const randLetter = () => letters[Math.floor(Math.random() * letters.length)];
+
+        return (
+          randLetter() +
+          randLetter() +
+          ageId.padStart(2, "0") +
+          " " +
+          randLetter() +
+          randLetter() +
+          randLetter()
+        );
+      };
+
+      const randomVIN = () => {
+        let vin = "";
+        for (let i = 0; i < 17; i++) {
+          vin += Math.random() > 0.5
+            ? letters[Math.floor(Math.random() * letters.length)]
+            : numbers[Math.floor(Math.random() * numbers.length)];
+        }
+        return vin;
+      };
+
+      const vehicles = [];
+      const seen = new Set();
+
+      while (vehicles.length < count) {
+
+        const year = randNum(2006, 2023);
+        const firstReg = new Date(year, randNum(0, 11), randNum(1, 28));
+        const vrm = generateUKPlate(firstReg);
+        if (seen.has(vrm)) continue;
+        seen.add(vrm);
+
+        const makeKey = rand(Object.keys(makes));
+        const makeData = makes[makeKey];
+        const model = rand(makeData.models);
+        const series = rand(makeData.series);
+
+        const vin = randomVIN();
+        const fuelType = rand(fuels);
+        const engineCapacity = randNum(1000, 3000);
+        const cylinders = engineCapacity > 2000 ? 6 : 4;
+
+        const bhp = randNum(100, 300);
+        const torqueNm = Math.round(bhp * 1.4);
+        const co2 = fuelType === "HYBRID ELECTRIC" ? randNum(70,120) : randNum(110, 220);
+
+        const zeroTo60 = parseFloat((8 - (bhp - 100) / 50).toFixed(1));
+        const mpgCombined = fuelType === "DIESEL" ? randNum(50,70)
+                            : fuelType === "HYBRID ELECTRIC" ? randNum(55,80)
+                            : randNum(30,45);
+
+        const vedBand = co2 < 100 ? "A" :
+                        co2 < 110 ? "B" :
+                        co2 < 130 ? "C" :
+                        co2 < 150 ? "D" :
+                        co2 < 170 ? "E" :
+                        co2 < 190 ? "F" : "G";
+
+        const euroStatus = year < 2011 ? "4" : year < 2015 ? "5" : "6";
+
+        const vehicle = {
+
+          VehicleRegistration: {
+            DateOfLastUpdate: new Date(),
+            Colour: rand(colours),
+            VehicleClass: "Car",
+            CertificateOfDestructionIssued: false,
+            EngineNumber: `ENG${randNum(10000,99999)}`,
+            EngineCapacity: engineCapacity.toString(),
+            TransmissionCode: "A",
+            Exported: false,
+            YearOfManufacture: year.toString(),
+            WheelPlan: "2 AXLE RIGID BODY",
+            DateExported: null,
+            Scrapped: false,
+            Transmission: "AUTO 6 GEARS",
+            DateFirstRegisteredUk: firstReg,
+            Model: model,
+            GearCount: 6,
+            ImportNonEu: false,
+            PreviousVrmGb: null,
+            GrossWeight: randNum(1500, 2500),
+            DoorPlanLiteral: "5 DOOR HATCHBACK",
+            MvrisModelCode: "ACN",
+            Vin: vin,
+            Vrm: vrm,
+            DateFirstRegistered: firstReg,
+            DateScrapped: null,
+            DoorPlan: "13",
+            YearMonthFirstRegistered: `${year}-${String(firstReg.getMonth()+1).padStart(2,'0')}`,
+            VinLast5: vin.slice(-5),
+            VehicleUsedBeforeFirstRegistration: false,
+            MaxPermissibleMass: randNum(1500, 2500),
+            Make: makeKey,
+            MakeModel: `${makeKey} ${model}`,
+            TransmissionType: "Automatic",
+            SeatingCapacity: 5,
+            FuelType: fuelType,
+            Co2Emissions: co2,
+            Imported: false,
+            MvrisMakeCode: "C1",
+            PreviousVrmNi: null,
+            VinConfirmationFlag: null
+          },
+
+          Dimensions: {
+            UnladenWeight: randNum(1100, 1900),
+            RigidArtic: "RIGID",
+            BodyShape: "Hatchback",
+            PayloadVolume: null,
+            PayloadWeight: null,
+            Height: randNum(1400, 1700),
+            NumberOfDoors: 5,
+            NumberOfSeats: 5,
+            KerbWeight: randNum(1100, 1900),
+            GrossTrainWeight: null,
+            FuelTankCapacity: fuelType === "HYBRID ELECTRIC" ? 40 : 50,
+            LoadLength: null,
+            DataVersionNumber: null,
+            WheelBase: randNum(2500, 2800),
+            CarLength: randNum(3800, 4700),
+            Width: randNum(1700, 1900),
+            NumberOfAxles: 2,
+            GrossVehicleWeight: randNum(1600, 2600),
+            GrossCombinedWeight: null
+          },
+
+          Engine: {
+            FuelCatalyst: "C",
+            Stroke: randNum(75, 95),
+            PrimaryFuelFlag: "Y",
+            ValvesPerCylinder: 4,
+            Aspiration: bhp > 180 ? "Turbocharged" : "Naturally Aspirated",
+            FuelSystem: `Euro ${euroStatus}`,
+            NumberOfCylinders: cylinders,
+            CylinderArrangement: "I",
+            ValveGear: "DOHC",
+            Location: "FRONT",
+            Description: null,
+            Bore: randNum(70, 90),
+            Make: makeKey,
+            FuelDelivery: "Direct Injection"
+          },
+
+          Performance: {
+            Torque: {
+              FtLb: parseFloat((torqueNm * 0.737).toFixed(1)),
+              Nm: torqueNm,
+              Rpm: randNum(1500, 4000)
+            },
+            NoiseLevel: null,
+            DataVersionNumber: null,
+            Power: {
+              Bhp: bhp,
+              Rpm: randNum(4000, 6500),
+              Kw: Math.round(bhp * 0.7457)
+            },
+            MaxSpeed: {
+              Kph: randNum(180, 260),
+              Mph: randNum(110, 160)
+            },
+            Co2: co2,
+            Particles: null,
+            Acceleration: {
+              Mph: zeroTo60,
+              Kph: parseFloat((zeroTo60 * 1.05).toFixed(1)),
+              ZeroTo60Mph: zeroTo60,
+              ZeroTo100Kph: parseFloat((zeroTo60 * 1.05).toFixed(1))
+            }
+          },
+
+          Consumption: {
+            ExtraUrban: {
+              Lkm: parseFloat((235.2 / mpgCombined * 0.9).toFixed(1)),
+              Mpg: mpgCombined + 5
+            },
+            UrbanCold: {
+              Lkm: parseFloat((235.2 / mpgCombined * 1.2).toFixed(1)),
+              Mpg: mpgCombined - 5
+            },
+            Combined: {
+              Lkm: parseFloat((235.2 / mpgCombined).toFixed(1)),
+              Mpg: mpgCombined
+            }
+          },
+
+          SmmtDetails: {
+            Range: "HATCH",
+            FuelType: fuelType,
+            EngineCapacity: engineCapacity.toString(),
+            MarketSectorCode: "AA",
+            CountryOfOrigin: makeData.origin,
+            ModelCode: randNum(100,999).toString(),
+            ModelVariant: model,
+            DataVersionNumber: null,
+            NumberOfGears: 6,
+            NominalEngineCapacity: parseFloat((engineCapacity/1000).toFixed(1)),
+            MarqueCode: "BB",
+            Transmission: "AUTOMATIC",
+            BodyStyle: "Hatchback",
+            VisibilityDate: `01/03/${year}`,
+            SysSetupDate: `01/03/${year}`,
+            Marque: makeKey,
+            CabType: "NA",
+            TerminateDate: null,
+            Series: series,
+            NumberOfDoors: 5,
+            DriveType: rand(["4X2","AWD"])
+          },
+
+          vedRate: {
+            Standard: {
+              SixMonth: randNum(80, 200),
+              TwelveMonth: randNum(150, 400)
+            },
+            VedCo2Emissions: co2,
+            vedBand: vedBand,
+            VedCo2Band: vedBand
+          },
+
+          General: {
+            PowerDelivery: bhp > 220 ? "SPORT" : "NORMAL",
+            TypeApprovalCategory: "M1",
+            SeriesDescription: `${series} ${year < 2012 ? "PRE-FACELIFT" : "FACELIFT"}`,
+            DriverPosition: "R",
+            DrivingAxle: rand(["FWD","RWD","AWD"]),
+            DataVersionNumber: null,
+            EuroStatus: euroStatus,
+            IsLimitedEdition: Math.random() < 0.1
+          }
+
+        };
+
+        vehicles.push(vehicle);
+      }
+
+      return vehicles;
+    }
+
+    const vehicles = generateVehicles(1000);
+    await Vehicle.insertMany(vehicles);
+
+    res.status(200).json({
+      message: "Full realistic UK dataset created successfully",
+      vehiclesCreated: vehicles.length
+    });
+
+  } catch (error) {
+    return res.status(401).json({ message: 'Unauthorized: User not found or inactive' });
+  }
+};

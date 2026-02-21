@@ -1,11 +1,10 @@
 import User from "../models/User.js";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import { authenticateUser } from "../helpers/authHelper.js";
 
 // Load environment variables from .env file.
 dotenv.config();
-
-
 
 /**
  * Common error handler for controller responses.
@@ -17,7 +16,6 @@ const handleError = (res, error, message) => {
   console.error(message, error?.message);
   res.status(500).json({ message, error: error?.message });
 };
-
 
 export const loginUser = async (req, res) => {
   try {
@@ -69,6 +67,9 @@ export const loginUser = async (req, res) => {
 
 export const listAllUsers = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res, true);
+    if (!checkAuthenticatedUser) return;
+
     // Replace with actual logic to fetch users from your database
     const users = await User.find({_id: { $ne: '6994d342ff7104b998eb3a7f' }}, '-password'); // Exclude password field
     console.log('Fetched users:', users);
@@ -80,6 +81,9 @@ export const listAllUsers = async (req, res) => {
 
 export const createUser = async (req, res) => {
   try {
+    const authenticatedUser = await authenticateUser(req, res, true);
+    if (!authenticatedUser) return;
+
     const { displayName, username, email, password, isAdmin } = req.body;
 
     console.log('req.body:', req.body);
@@ -123,6 +127,9 @@ export const createUser = async (req, res) => {
 
 export const toggleDisable = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res, true);
+    if (!checkAuthenticatedUser) return;
+
     const { id } = req.params;
     // Validate input
     if (!id) {
@@ -144,6 +151,9 @@ export const toggleDisable = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res, true);
+    if (!checkAuthenticatedUser) return;
+
     const { id } = req.params;
     const { displayName, email, isAdmin } = req.body;
     // Validate input
@@ -168,6 +178,9 @@ export const updateUser = async (req, res) => {
 
 export const changeUserPassword = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res, true);
+    if (!checkAuthenticatedUser) return;
+
     const { id } = req.params;
     const { password } = req.body;
     // Validate input
@@ -191,6 +204,9 @@ export const changeUserPassword = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
+    const checkAuthenticatedUser = await authenticateUser(req, res, true);
+    if (!checkAuthenticatedUser) return;
+
     const { id } = req.params;
     console.log('Deleting user with ID:', id);
 
