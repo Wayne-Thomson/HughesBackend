@@ -18,7 +18,6 @@ export const authUser = (req, res, next) => {
         console.error('Token verification failed:', error);
         return res.status(401).json({ message: 'Unauthorized: Invalid token' });
     }
-    console.log('User authenticated:', req.user);
 
     next();
-}
+};

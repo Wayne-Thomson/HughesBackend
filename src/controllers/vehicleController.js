@@ -1,9 +1,10 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import Vehicle from '../models/Vehicle.js';
+import Vehicle from '../models/VehicleTwo.js';
 import User from '../models/User.js';
 import { authenticateUser } from '../helpers/authHelper.js';
+// import VehicleTwo from '../models/VehicleTwo.js';
 
 // Load environment variables from .env file.
 dotenv.config();
@@ -23,6 +24,10 @@ export const getVehicles = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
     if (!checkAuthenticatedUser) return;
+
+    // await deleteAllVehicles(req, res); // Call the function to delete all vehicles and return the response
+
+    // return await newCreateTestDataSet(req, res); // Call the new function to create the test dataset and return the response
 
     const vehicles = await Vehicle.find({ isDeleted: false }).sort({ createdAt: -1 });
     if (!vehicles) {
@@ -494,10 +499,10 @@ export const createTestDataSet = async (req, res) => {
   }
 };
 
-export const newCreateTestDataSet = async (req, res) => {
+const newCreateTestDataSet = async (req, res) => {
   try {
-    const checkAuthenticatedUser = await authenticateUser(req, res, true);
-    if (!checkAuthenticatedUser) return;
+    // const checkAuthenticatedUser = await authenticateUser(req, res, true);
+    // if (!checkAuthenticatedUser) return;
 
     function generateVehicles(count = 1000) {
 
@@ -615,6 +620,16 @@ export const newCreateTestDataSet = async (req, res) => {
         return vin;
       };
 
+      const randomDateBetween = (startYear = 2001) => {
+        const start = new Date(startYear, 0, 1);
+        const end = new Date();
+        return new Date(
+          start.getTime() + Math.random() * (end.getTime() - start.getTime())
+        );
+      };
+
+      const formatDate = (date) => date.toISOString().split("T")[0];
+
       const vehicles = [];
       const seen = new Set();
 
@@ -654,13 +669,58 @@ export const newCreateTestDataSet = async (req, res) => {
 
         const euroStatus = year < 2011 ? "4" : year < 2015 ? "5" : "6";
 
+        const generateMotTests = (firstUsedDate) => {
+          const tests = [];
+          const firstYear = new Date(firstUsedDate).getFullYear();
+          const currentYear = new Date().getFullYear();
+          const age = currentYear - firstYear;
+
+          if (age < 3) return [];
+
+          const numberOfTests = Math.floor(Math.random() * Math.min(age - 2, 5));
+
+          for (let i = 0; i < numberOfTests; i++) {
+            const testDate = randomDateBetween(firstYear + 3);
+            tests.push({
+              testDate: formatDate(testDate),
+              result: rand(["PASSED", "FAILED"]),
+              mileage: Math.floor(Math.random() * 150000)
+            });
+          }
+
+          return tests.sort((a, b) => new Date(a.testDate) - new Date(b.testDate));
+        };
+
+        let colour = rand(colours);
+
+        const isDeleted = Math.random() < 0.03;
+        const dateDeleted = isDeleted ? randomDateBetween(2022) : null;
+        const EngineNumber = `ENG${randNum(10000,99999)}`;
+
         const vehicle = {
+          registration: vrm, 
+          vin: vin,
+          make: makeKey,
+          model: model,
+          country: makeData.origin,
+          generation: series,
+          motTests: generateMotTests(firstReg),
+          registrationDate: firstReg,
+          firstUsedDate: firstReg,
+          fuelType: fuelType,
+          primaryColour: colour,
+          registrationDate: firstReg,
+          manufactureDate: year.toString(),
+          engineSize: engineCapacity.toString(),
+          isDeleted,
+          dateDeleted,
+          EngineCode: EngineNumber,
           VehicleRegistration: {
             DateOfLastUpdate: new Date(),
-            Colour: rand(colours),
+            Colour: colour,
             VehicleClass: "Car",
             CertificateOfDestructionIssued: false,
-            EngineNumber: `ENG${randNum(10000,99999)}`,
+            EngineNumber: EngineNumber,
             EngineCapacity: engineCapacity.toString(),
             TransmissionCode: "A",
             Exported: false,
@@ -840,6 +900,25 @@ export const newCreateTestDataSet = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(401).json({ message: 'Unauthorized: User not found or inactive' });
+    console.error("Error creating test dataset:", error);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+const deleteAllVehicles = async (req, res) => {
+  try {
+
+    const result = await Vehicle.deleteMany({});
+
+    res.status(200).json({
+      message: "All vehicle records deleted successfully",
+      deletedCount: result.deletedCount
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting vehicle records",
+      error: error.message
+    });
   }
 };
