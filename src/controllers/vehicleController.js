@@ -655,7 +655,6 @@ export const newCreateTestDataSet = async (req, res) => {
         const euroStatus = year < 2011 ? "4" : year < 2015 ? "5" : "6";
 
         const vehicle = {
-
           VehicleRegistration: {
             DateOfLastUpdate: new Date(),
             Colour: rand(colours),
@@ -824,7 +823,6 @@ export const newCreateTestDataSet = async (req, res) => {
             EuroStatus: euroStatus,
             IsLimitedEdition: Math.random() < 0.1
           }
-
         };
 
         vehicles.push(vehicle);
