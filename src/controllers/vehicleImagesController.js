@@ -80,9 +80,11 @@ export const uploadVehicleImage = async (req, res) => {
                 uploadedByUsername: username,
             });
             await vehicleImage.save();
+            // Print the size of the new vehicleImage object saved to database
+            const objectSize = JSON.stringify(vehicleImage).length;
+            const objectSizeKB = (objectSize / 1024).toFixed(2);
+            console.log('New VehicleImage object saved. Total object size:', objectSizeKB, 'KB');
         }
-
-        // Update the company stats for total size of images
         const companyStats = await CompanyStats.findOne();
         if (companyStats) {
             companyStats.totalImageStorageBytes += req.file.size;
