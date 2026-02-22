@@ -27,7 +27,7 @@ export const getVehicles = async (req, res) => {
 
     // await deleteAllVehicles(req, res); // Call the function to delete all vehicles and return the response
 
-    // return await newCreateTestDataSet(req, res); // Call the new function to create the test dataset and return the response
+    // return await newCreateTestDataSet(req, res); // Call the new function to create the test dataset and return the response  
 
     const vehicles = await Vehicle.find({ isDeleted: false }).sort({ createdAt: -1 });
     if (!vehicles) {
@@ -35,6 +35,7 @@ export const getVehicles = async (req, res) => {
     };
     res.status(200).json({ message: 'Vehicles retrieved successfully', vehicles: vehicles });
   } catch (error) {
+    console.error('Error getting vehicles:', error.message);
     handleError(res, error, 'Error getting vehicles');
   };
 };
@@ -50,6 +51,8 @@ export const getDeletedVehicles = async (req, res) => {
     handleError(res, error, 'Error getting deleted vehicles');
   };
 };
+
+
 
 export const getVehicle = async (req, res) => {
   try {
@@ -80,6 +83,10 @@ export const addNewVehicle = async (req, res) => {
     let newVehicle;
     if (registration) {
       newVehicle = await createVehicleREG(registration, res);
+      // Once this point, if vehicle exists in DVLA a request is sent for full data.
+
+
+
     } else if (vin) {
       newVehicle = await createVehicleVIN(vin, res);
     }
@@ -89,6 +96,7 @@ export const addNewVehicle = async (req, res) => {
     handleError(res, error, 'Error adding new vehicle');
   }
 };
+
 
 const createVehicleREG = async (registration, res) => {
   try {
