@@ -1,5 +1,6 @@
 import axios from "axios";
 import CompanyStats from "../models/companyStats.js";
+import VehicleTwo from "../models/VehicleTwo.js";
 
 const createVehicleREG = async (registration, res) => {
   try {
@@ -108,12 +109,14 @@ const createVehicleVIN = async (vin, res) => {
 
 export const getNewVehicleFullData = async (registration, res) => {
   let lookupReserved = false;
-    registration = 'RE22EUA'; // For testing purposes, you can replace this with any valid registration number to fetch data for that vehicle. In production, this should come from the request body or parameters.
+    registration = 'OE07UWO'; // For testing purposes, you can replace this with any valid registration number to fetch data for that vehicle. In production, this should come from the request body or parameters.
   try {
+    console.log('1');
     const companyStats = await CompanyStats.findOne().sort({ createdAt: 1 });
     if (!companyStats) {
       return res.status(500).json({ message: 'Company stats not found' });
     }
+    console.log('1');
 
     const reservedStats = await CompanyStats.findOneAndUpdate(
       {
@@ -125,23 +128,73 @@ export const getNewVehicleFullData = async (registration, res) => {
       },
       { new: true }
     );
+    console.log('1');
 
     if (!reservedStats) {
       return res.status(429).json({ message: 'Not enough lookups remaining this month' });
     }
+    console.log('1');
 
     lookupReserved = true;
+    // CAR_DETAILS_API_KEY CAR_DETAILS_TEST_KEY
     const carDetailsURL = `${process.env.CAR_DETAILS_API_URL}${process.env.CAR_DETAILS_SPEC}?apikey=${process.env.CAR_DETAILS_TEST_KEY}&vrm=${registration}`;
+    console.log('1');
 
     console.log('Requesting full vehicle details from external API for registration number:', registration);
     const { data } = await axios.get(carDetailsURL);
-
+    console.log('1');
+    console.log('', data);
     console.log('Checking if response contains expected vehicle details data...');
-    if (!data?.VehicleRegistration || !data?.VehicleInformation) {
+    if (!data?.VehicleRegistration) {
       throw new Error('Invalid response from vehicle details API');
     }
-
+    console.log('Vehicle details API response data:', data);
     // With the returned data create a new VehicleTwo document in the database
+    const newVehicleTwo = {
+      VehicleRegistration: data?.VehicleRegistration || null,
+      Dimensions: data?.Dimensions || null,
+      Engine: data?.Engine || null,
+      Performance: data?.Performance || null,
+      Consumption: data?.Consumption || null,
+      VehicleHistory: data?.VehicleHistory || null,
+      SmmtDetails: data?.SmmtDetails || null,
+      vedRate: data?.vedRate || null,
+      General: data?.General || null,
+      registration: data?.VehicleRegistration?.Vrm || "Unknown",
+      vin: data?.VehicleRegistration?.Vin || "Unknown",
+      make: data?.VehicleRegistration?.Make || "Unknown",
+      model: data?.VehicleRegistration?.Model || "Unknown",
+      makeModel: data?.VehicleRegistration?.MakeModel || "Unknown",
+      firstUsedDate: data?.VehicleRegistration?.DateFirstRegisteredUk || "Unknown",
+      fuelType: data?.VehicleRegistration?.FuelType || "Unknown",
+      primaryColour: data?.VehicleRegistration?.Colour || "Unknown",
+      registrationDate: data?.VehicleRegistration?.DateFirstRegisteredUk || "Unknown",
+      manufactureDate: data?.VehicleRegistration?.YearOfManufacture || "Unknown",
+      engineSize: data?.VehicleRegistration?.EngineCapacity || "Unknown",
+      hasOutstandingRecall: data?.VehicleRegistration?.HasOutstandingRecall || "Unknown",
+
+
+      motTests: [],
+      customNotes: "",
+      generation: "?",
+      series: data?.VehicleRegistration?.Series || "Unknown",
+      seriesDescription: data?.SmmtDetails?.SeriesDescription || "Unknown",
+      country: data?.SmmtDetails?.CountryOfOrigin || "Unknown",
+      engineCode: data?.VehicleRegistration?.EngineNumber || "Unknown",
+      isDeleted: false,
+      dateDeleted: null,
+      deletedBy: null,
+      createdBy: null
+    };
+    console.log('1');
+
+    // Save the new VehicleTwo document to the database
+    try {
+        const savedVehicleTwo = await VehicleTwo.create(newVehicleTwo);
+    } catch (error) {
+        console.error('Error saving VehicleTwo document to database:', error);
+    }
+    console.log('VehicleTwo document successfully saved to database with ID:', savedVehicleTwo._id);
 
     return data;
   } catch (error) {

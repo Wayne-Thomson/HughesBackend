@@ -241,6 +241,7 @@ const vehicleTwoSchema = new mongoose.Schema({
     vin: { type: String, required: false },
     make: { type: String, required: false },
     model: { type: String, required: false },
+    makeModel: { type: String, required: false },
     firstUsedDate: { type: String, required: false },
     fuelType: { type: String, required: false },
     primaryColour: { type: String, required: false },
@@ -253,6 +254,8 @@ const vehicleTwoSchema = new mongoose.Schema({
     generation: { type: String, required: false },
     country: { type: String, required: false },
     engineCode: { type: String, required: false },
+    series: { type: String, required: false },
+    seriesDescription: { type: String, required: false }
 }, { timestamps: true });
 
 // Export the VehicleTwo model based on the schema.
