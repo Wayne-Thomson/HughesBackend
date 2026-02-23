@@ -109,14 +109,12 @@ const createVehicleVIN = async (vin, res) => {
 
 export const getNewVehicleFullData = async (registration, res) => {
   let lookupReserved = false;
-    registration = 'OE07UWO'; // For testing purposes, you can replace this with any valid registration number to fetch data for that vehicle. In production, this should come from the request body or parameters.
+    registration = 'EK11YTH'; // For testing purposes, you can replace this with any valid registration number to fetch data for that vehicle. In production, this should come from the request body or parameters.
   try {
-    console.log('1');
     const companyStats = await CompanyStats.findOne().sort({ createdAt: 1 });
     if (!companyStats) {
       return res.status(500).json({ message: 'Company stats not found' });
     }
-    console.log('1');
 
     const reservedStats = await CompanyStats.findOneAndUpdate(
       {
@@ -128,22 +126,17 @@ export const getNewVehicleFullData = async (registration, res) => {
       },
       { new: true }
     );
-    console.log('1');
 
     if (!reservedStats) {
       return res.status(429).json({ message: 'Not enough lookups remaining this month' });
     }
-    console.log('1');
 
     lookupReserved = true;
     // CAR_DETAILS_API_KEY CAR_DETAILS_TEST_KEY
-    const carDetailsURL = `${process.env.CAR_DETAILS_API_URL}${process.env.CAR_DETAILS_SPEC}?apikey=${process.env.CAR_DETAILS_TEST_KEY}&vrm=${registration}`;
-    console.log('1');
+    const carDetailsURL = `${process.env.CAR_DETAILS_API_URL}${process.env.CAR_DETAILS_SPEC}?apikey=${process.env.CAR_DETAILS_API_KEY}&vrm=${registration}`;
 
     console.log('Requesting full vehicle details from external API for registration number:', registration);
     const { data } = await axios.get(carDetailsURL);
-    console.log('1');
-    console.log('', data);
     console.log('Checking if response contains expected vehicle details data...');
     if (!data?.VehicleRegistration) {
       throw new Error('Invalid response from vehicle details API');
@@ -186,15 +179,15 @@ export const getNewVehicleFullData = async (registration, res) => {
       deletedBy: null,
       createdBy: null
     };
-    console.log('1');
 
     // Save the new VehicleTwo document to the database
+    let savedVehicleTwo;
     try {
-        const savedVehicleTwo = await VehicleTwo.create(newVehicleTwo);
+        savedVehicleTwo = await VehicleTwo.create(newVehicleTwo);
     } catch (error) {
         console.error('Error saving VehicleTwo document to database:', error);
+        throw error;
     }
-    console.log('VehicleTwo document successfully saved to database with ID:', savedVehicleTwo._id);
 
     return data;
   } catch (error) {
