@@ -2,6 +2,7 @@ import User from "../models/User.js";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { authenticateUser } from "../helpers/authHelper.js";
+import CompanyStats from "../models/companyStats.js";
 
 // Load environment variables from .env file.
 dotenv.config();

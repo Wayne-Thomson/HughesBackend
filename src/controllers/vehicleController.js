@@ -4,6 +4,8 @@ import mongoose from 'mongoose';
 import Vehicle from '../models/VehicleTwo.js';
 import User from '../models/User.js';
 import { authenticateUser } from '../helpers/authHelper.js';
+import { getNewVehicleFullData } from './vehicleHelpers.js';
+
 // import VehicleTwo from '../models/VehicleTwo.js';
 
 // Load environment variables from .env file.
@@ -75,6 +77,8 @@ export const addNewVehicle = async (req, res) => {
     const checkAuthenticatedUser = await authenticateUser(req, res);
     if (!checkAuthenticatedUser) return;
 
+    return await getNewVehicleFullData('ek11yth', res); // Call the function to get full vehicle data and return the response
+
     const { registration, vin } = req.body;
     if (!registration && !vin) {
       return res.status(400).json({ message: 'Vehicle registration or VIN is required' });
@@ -98,150 +102,11 @@ export const addNewVehicle = async (req, res) => {
 };
 
 
-const createVehicleREG = async (registration, res) => {
-  try {
-    // DVLA API integration using the registration number provided in the request body
-    const registrationNumber = registration;
-    const liveApi = process.env.APIkey;
-    const DVLAURIlive = 'https://history.mot.api.gov.uk/v1/trade/vehicles/registration';
-    let accessToken = '';
 
-    // Access token from Microsoft Identity Platform using the client credentials flow parameters from .env file
-    const microstoftTokenURL = process.env.TokenURL;
-    const clientId = process.env.ClientID;
-    const clientSecret = process.env.ClientSecret;
-    const scopeURL = process.env.ScopeURL;
-    let headers = {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-    };    
-    let payload = { 
-      grant_type: 'client_credentials',
-      client_id: clientId,
-      client_secret: clientSecret,
-      scope: scopeURL    
-    };  
-    console.log('Requesting access token from Microsoft Identity Platform...');
-    const { data: accessTokenData } = await axios.post(microstoftTokenURL, payload, headers);    
 
-    // Extract access token from response and check if it exists
-    accessToken = accessTokenData.access_token;
-    if (!accessToken) {throw new Error('Failed to obtain access token'); }
 
-    // Make request to DVLA API with the access token in the Authorization header
-    console.log(`Requesting vehicle data from DVLA API for registration number: ${registrationNumber}...`);
-    headers = {
-      headers: {
-        accept: 'application/json',
-        'x-api-key': liveApi,
-        Authorization: `Bearer ${accessToken}`,
-      },
-    };
 
-    // Request vehicle data from DVLA API and check if response contains expected data before proceeding
-    const { data } = await axios.get(`${DVLAURIlive}/${registrationNumber}`, headers);
-    if (!data?.registration) { throw new Error('Invalid response from DVLA API'); }
 
-    console.log('Creating new vehicle with registration number:', data.registration);
-    console.log('DVLA API response data:', data);
-    // Create a new vehicle document in the database using the data from the DVLA API response
-    const newVehicle = new Vehicle({
-      registration: data?.registration || 'Unknown Registration Number', 
-      vin: data?.vin || 'Unknown VIN',
-      make: data?.make || 'Unknown Make',
-      model: data?.model || 'Unknown Model',
-      firstUsedDate: data?.firstUsedDate || 'Unknown First Used Date',
-      fuelType: data?.fuelType || 'Unknown Fuel Type',
-      primaryColour: data?.primaryColour || 'Unknown Primary Colour',
-      registrationDate: data?.registrationDate || 'Unknown Registration Date',
-      manufactureDate: data?.manufactureDate || 'Unknown Manufacture Date',
-      engineSize: data?.engineSize || 'Unknown Engine Size',
-      hasOutstandingRecall: data?.hasOutstandingRecall || 'false',
-      motTests: data?.motTests || [], 
-      customNotes: '',
-      createdBy: null,
-    }); 
-    await newVehicle.save();
-
-    return newVehicle;
-  } catch (error) {
-    throw error; // Let the calling function handle the error and response
-  };
-};
-
-const createVehicleVIN = async (vin, res) => {
-  try {
-    // DVLA API integration using the registration number provided in the request body
-    const VIN = vin;
-    const liveApi = process.env.APIkey;
-    const DVLAURIlive = 'https://history.mot.api.gov.uk/v1/trade/vehicles/vin';
-    let accessToken = '';
-
-    // Access token from Microsoft Identity Platform using the client credentials flow parameters from .env file
-    const microstoftTokenURL = process.env.TokenURL;
-    const clientId = process.env.ClientID;
-    const clientSecret = process.env.ClientSecret;
-    const scopeURL = process.env.ScopeURL;
-    let headers = {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-    };    
-    let payload = { 
-      grant_type: 'client_credentials',
-      client_id: clientId,
-      client_secret: clientSecret,
-      scope: scopeURL    
-    };  
-    console.log('Requesting access token from Microsoft Identity Platform...');
-    const { data: accessTokenData } = await axios.post(microstoftTokenURL, payload, headers);    
-
-    // Extract access token from response and check if it exists
-    accessToken = accessTokenData.access_token;
-    if (!accessToken) {throw new Error('Failed to obtain access token'); }
-
-    // Make request to DVLA API with the access token in the Authorization header
-    console.log(`Requesting vehicle data from DVLA API for registration number: ${VIN}...`);
-    headers = {
-      headers: {
-        accept: 'application/json',
-        'x-api-key': liveApi,
-        Authorization: `Bearer ${accessToken}`,
-      },
-    };
-
-    // Request vehicle data from DVLA API and check if response contains expected data before proceeding
-    const { data } = await axios.get(`${DVLAURIlive}/${VIN}`, headers);
-    if (!data?.registration) { throw new Error('Invalid response from DVLA API'); }
-
-    console.log('DVLA API response data:', data);
-    // console.log('Creating new vehicle with registration number:', data.registration);
-    
-    // Create a new vehicle document in the database using the data from the DVLA API response
-    const newVehicle = new Vehicle({
-      registration: data?.registration || 'Unknown Registration Number', 
-      vin: VIN || 'Unknown VIN',
-      make: data?.make || 'Unknown Make',
-      model: data?.model || 'Unknown Model',
-      firstUsedDate: data?.firstUsedDate || 'Unknown First Used Date',
-      fuelType: data?.fuelType || 'Unknown Fuel Type',
-      primaryColour: data?.primaryColour || 'Unknown Primary Colour',
-      registrationDate: data?.registrationDate || 'Unknown Registration Date',
-      manufactureDate: data?.manufactureDate || 'Unknown Manufacture Date',
-      engineSize: data?.engineSize || 'Unknown Engine Size',
-      hasOutstandingRecall: data?.hasOutstandingRecall || 'false',
-      motTests: data?.motTests || [], 
-      customNotes: '',
-      createdBy: null,
-    }); 
-    await newVehicle.save();
-
-    return newVehicle;
-  } catch (error) {
-    throw error; // Let the calling function handle the error and response
-  };
-};
 
 export const updateAVehicle = async (req, res) => {
   try {
