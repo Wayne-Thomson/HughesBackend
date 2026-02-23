@@ -46,28 +46,7 @@ const createVehicleREG = async (registration, res) => {
     const { data } = await axios.get(`${DVLAURIlive}/${registrationNumber}`, headers);
     if (!data?.registration) { throw new Error('Invalid response from DVLA API'); }
 
-    console.log('Creating new vehicle with registration number:', data.registration);
-    console.log('DVLA API response data:', data);
-    // Create a new vehicle document in the database using the data from the DVLA API response
-    const newVehicle = new Vehicle({
-      registration: data?.registration || 'Unknown Registration Number', 
-      vin: data?.vin || 'Unknown VIN',
-      make: data?.make || 'Unknown Make',
-      model: data?.model || 'Unknown Model',
-      firstUsedDate: data?.firstUsedDate || 'Unknown First Used Date',
-      fuelType: data?.fuelType || 'Unknown Fuel Type',
-      primaryColour: data?.primaryColour || 'Unknown Primary Colour',
-      registrationDate: data?.registrationDate || 'Unknown Registration Date',
-      manufactureDate: data?.manufactureDate || 'Unknown Manufacture Date',
-      engineSize: data?.engineSize || 'Unknown Engine Size',
-      hasOutstandingRecall: data?.hasOutstandingRecall || 'false',
-      motTests: data?.motTests || [], 
-      customNotes: '',
-      createdBy: null,
-    }); 
-    await newVehicle.save();
-
-    return newVehicle;
+    return data;
   } catch (error) {
     throw error; // Let the calling function handle the error and response
   };
@@ -119,28 +98,9 @@ const createVehicleVIN = async (vin, res) => {
     if (!data?.registration) { throw new Error('Invalid response from DVLA API'); }
 
     console.log('DVLA API response data:', data);
-    // console.log('Creating new vehicle with registration number:', data.registration);
     
-    // Create a new vehicle document in the database using the data from the DVLA API response
-    const newVehicle = new Vehicle({
-      registration: data?.registration || 'Unknown Registration Number', 
-      vin: VIN || 'Unknown VIN',
-      make: data?.make || 'Unknown Make',
-      model: data?.model || 'Unknown Model',
-      firstUsedDate: data?.firstUsedDate || 'Unknown First Used Date',
-      fuelType: data?.fuelType || 'Unknown Fuel Type',
-      primaryColour: data?.primaryColour || 'Unknown Primary Colour',
-      registrationDate: data?.registrationDate || 'Unknown Registration Date',
-      manufactureDate: data?.manufactureDate || 'Unknown Manufacture Date',
-      engineSize: data?.engineSize || 'Unknown Engine Size',
-      hasOutstandingRecall: data?.hasOutstandingRecall || 'false',
-      motTests: data?.motTests || [], 
-      customNotes: '',
-      createdBy: null,
-    }); 
-    await newVehicle.save();
 
-    return newVehicle;
+    return data;
   } catch (error) {
     throw error; // Let the calling function handle the error and response
   };
