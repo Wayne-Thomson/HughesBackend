@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import Vehicle from '../models/VehicleTwo.js';
 import User from '../models/User.js';
 import { authenticateUser } from '../helpers/authHelper.js';
-import { getNewVehicleFullData } from './vehicleHelpers.js';
+import { getNewVehicleFullData, createVehicleREG, createVehicleVIN } from './vehicleHelpers.js';
 
 // import VehicleTwo from '../models/VehicleTwo.js';
 
@@ -72,30 +72,45 @@ export const getVehicle = async (req, res) => {
   };
 };
 
+export const lookupVehicle = async (req, res) => {
+  try {
+    const checkAuthenticatedUser = await authenticateUser(req, res);
+    if (!checkAuthenticatedUser) return;
+
+    const { registration, vin } = req.query;
+    if (!registration && !vin) {
+      return res.status(400).json({ message: 'Vehicle registration or VIN is required' });
+    }
+
+    try {
+      let vehicleData;
+      if (registration) {
+        vehicleData = await createVehicleREG(registration);
+      } else if (vin) {
+        vehicleData = await createVehicleVIN(vin);
+      }
+      
+      res.status(200).json({ message: 'Vehicle lookup successful', data: vehicleData });
+    } catch (error) {
+      return res.status(400).json({ message: error.message || 'Vehicle not found in DVLA database' });
+    }
+  } catch (error) {
+    handleError(res, error, 'Error looking up vehicle');
+  }
+};
+
 export const addNewVehicle = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
     if (!checkAuthenticatedUser) return;
 
-    return await getNewVehicleFullData('ek11yth', res); // Call the function to get full vehicle data and return the response
-
-    const { registration, vin } = req.body;
-    if (!registration && !vin) {
-      return res.status(400).json({ message: 'Vehicle registration or VIN is required' });
+    const { vehicleDetails } = req.body;
+    if (!vehicleDetails?.registration) {
+      return res.status(404).json({ message: 'Vehicle registration not found in request payload' });
     }
 
-    let newVehicle;
-    if (registration) {
-      newVehicle = await createVehicleREG(registration, res);
-      // Once this point, if vehicle exists in DVLA a request is sent for full data.
-
-
-
-    } else if (vin) {
-      newVehicle = await createVehicleVIN(vin, res);
-    }
-
-    res.status(200).json({ message: 'Vehicle created successfully', newVehicle: newVehicle });
+    // Get full vehicle details and save to database
+    return await getNewVehicleFullData(vehicleDetails.registration, res, vehicleDetails);
   } catch (error) {
     handleError(res, error, 'Error adding new vehicle');
   }

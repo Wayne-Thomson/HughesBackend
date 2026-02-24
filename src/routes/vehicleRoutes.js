@@ -1,6 +1,6 @@
 import express from 'express';
 import multer from 'multer';
-import { addNewVehicle, getDeletedVehicles, getVehicle, getVehicles, updateAVehicle, deleteAVehicle, hardDeleteAVehicle, restoreAVehicle } from '../controllers/vehicleController.js';
+import { addNewVehicle, getDeletedVehicles, getVehicle, getVehicles, updateAVehicle, deleteAVehicle, hardDeleteAVehicle, restoreAVehicle, lookupVehicle } from '../controllers/vehicleController.js';
 import { getVehicleImage, uploadVehicleImage, deleteVehicleImage } from '../controllers/vehicleImagesController.js';
 import { authUser } from '../middleware/authUser.js';
 
@@ -25,6 +25,7 @@ const upload = multer({
 
 // Create routes for vehicles
 router.post('/add', authUser, addNewVehicle);
+router.get('/lookup', authUser, lookupVehicle);
 
 // Read routes for vehicles
 router.get('/deletedvehicles', authUser, getDeletedVehicles);

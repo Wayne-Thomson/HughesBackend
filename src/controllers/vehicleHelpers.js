@@ -107,10 +107,19 @@ const createVehicleVIN = async (vin, res) => {
   };
 };
 
-export const getNewVehicleFullData = async (registration, res) => {
+export const getNewVehicleFullData = async (registration, res, confirmedVehicleDetails) => {
   let lookupReserved = false;
-    registration = 'EK11YTH'; // For testing purposes, you can replace this with any valid registration number to fetch data for that vehicle. In production, this should come from the request body or parameters.
   try {
+    console.log('Initiating process to get full vehicle details for registration number:', registration);
+    
+    // Use confirmed details if provided, otherwise fetch from API
+    let basicVehicleDetails = confirmedVehicleDetails;
+
+    console.log('Basic vehicle details:', basicVehicleDetails);
+    if (!basicVehicleDetails) {
+      return res.status(400).json({ message: 'Basic vehicle details are required to proceed with fetching full details' });
+    }
+    
     const companyStats = await CompanyStats.findOne().sort({ createdAt: 1 });
     if (!companyStats) {
       return res.status(500).json({ message: 'Company stats not found' });
@@ -133,7 +142,7 @@ export const getNewVehicleFullData = async (registration, res) => {
 
     lookupReserved = true;
     // CAR_DETAILS_API_KEY CAR_DETAILS_TEST_KEY
-    const carDetailsURL = `${process.env.CAR_DETAILS_API_URL}${process.env.CAR_DETAILS_SPEC}?apikey=${process.env.CAR_DETAILS_API_KEY}&vrm=${registration}`;
+    const carDetailsURL = `${process.env.CAR_DETAILS_API_URL}${process.env.CAR_DETAILS_SPEC}?apikey=${process.env.CAR_DETAILS_TEST_KEY}&vrm=${registration}`;
 
     console.log('Requesting full vehicle details from external API for registration number:', registration);
     const { data } = await axios.get(carDetailsURL);
@@ -167,7 +176,7 @@ export const getNewVehicleFullData = async (registration, res) => {
       hasOutstandingRecall: data?.VehicleRegistration?.HasOutstandingRecall || "Unknown",
 
 
-      motTests: [],
+      motTests: basicVehicleDetails?.motTests || [],
       customNotes: "",
       generation: "?",
       series: data?.VehicleRegistration?.Series || "Unknown",
@@ -186,10 +195,11 @@ export const getNewVehicleFullData = async (registration, res) => {
         savedVehicleTwo = await VehicleTwo.create(newVehicleTwo);
     } catch (error) {
         console.error('Error saving VehicleTwo document to database:', error);
+        lookupReserved = false; // Reset lookup reservation flag since save failed after sending request to external API
         throw error;
     }
 
-    return data;
+    return res.status(200).json({ message: 'Vehicle details fetched and saved successfully', vehicle: savedVehicleTwo });
   } catch (error) {
     if (lookupReserved) {
       try {
@@ -213,3 +223,5 @@ export const getNewVehicleFullData = async (registration, res) => {
     return res.status(500).json({ message: 'Vehicle details lookup failed', error: error?.message });
   }
 };
+
+export { createVehicleREG, createVehicleVIN };
