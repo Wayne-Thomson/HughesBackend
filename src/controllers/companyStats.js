@@ -24,17 +24,14 @@ const getDatabaseStats = async () => {
     const db = mongoose.connection.db;
     const dbStats = await db.stats();
     
-    // Calculate total database size in MB (dataSize + indexes)
-    const dataSizeMB = dbStats.dataSize / (1024 * 1024);
-    const indexSizeMB = Object.values(dbStats.indexSizes || {}).reduce((sum, size) => sum + size, 0) / (1024 * 1024);
-    const totalDatabaseSizeMB = dataSizeMB + indexSizeMB;
+    // Calculate total database size in MB using storageSize (matches MongoDB Atlas dashboard)
+    // storageSize includes data, indexes, and preallocated space
+    const storageSizeMB = (dbStats.storageSize || dbStats.dataSize) / (1024 * 1024);
     const databaseSizeLimit = 512; // MongoDB Atlas 512MB limit
-    const percentageUsed = ((totalDatabaseSizeMB / databaseSizeLimit) * 100).toFixed(2);
+    const percentageUsed = ((storageSizeMB / databaseSizeLimit) * 100).toFixed(2);
 
     const statsData = {
-        totalDatabaseSizeMB: parseFloat(totalDatabaseSizeMB.toFixed(2)),
-        dataSizeMB: parseFloat(dataSizeMB.toFixed(2)),
-        indexSizeMB: parseFloat(indexSizeMB.toFixed(2)),
+        totalDatabaseSizeMB: parseFloat(storageSizeMB.toFixed(2)),
         databaseSizeLimit,
         databasePercentageUsed: parseFloat(percentageUsed)
     };
