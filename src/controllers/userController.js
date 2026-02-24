@@ -21,6 +21,7 @@ const handleError = (res, error, message) => {
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const lowerCaseEmail = email.toLowerCase();
 
     // Validate input
     if (!email || !password) {
@@ -28,8 +29,9 @@ export const loginUser = async (req, res) => {
     }
     
     // Find user by email
-    const user = await User.findOne({ email, isActive: 'enabled' });
+    const user = await User.findOne({ email: lowerCaseEmail, isActive: 'enabled' });
     if (!user) {
+      console.log(`Login attempt failed: No active user found with email ${lowerCaseEmail}`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
@@ -86,6 +88,9 @@ export const createUser = async (req, res) => {
     if (!authenticatedUser) return;
 
     const { displayName, username, email, password, isAdmin } = req.body;
+    const lowerCaseEmail = email.toLowerCase();
+    const lowerCaseUsername = username.toLowerCase();
+    const lowerCaseDisplayName = displayName.toLowerCase();
 
     console.log('req.body:', req.body);
 
@@ -95,7 +100,7 @@ export const createUser = async (req, res) => {
     }
 
     // Check if user with the same username already exists
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ username: lowerCaseUsername });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this username already exists' });
     }
@@ -103,9 +108,9 @@ export const createUser = async (req, res) => {
     // Create and save the new user
     // Password will be automatically hashed in the pre-save hook
     const user = new User({
-      displayName: displayName.toLowerCase(),
-      username: username.toLowerCase(),
-      email: email.toLowerCase(),
+      displayName: lowerCaseDisplayName,
+      username: lowerCaseUsername,
+      email: lowerCaseEmail,
       password,
       isAdmin: isAdmin ? true : false,
     });
@@ -117,6 +122,7 @@ export const createUser = async (req, res) => {
         _id: user._id,
         username: user.username,
         displayName: user.displayName,
+        email: user.email,
         isAdmin: user.isAdmin === true
       }
     });
