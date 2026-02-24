@@ -7,6 +7,7 @@ import companyStatsRoutes from './routes/companyStatsRoutes.js';
 import bodyParser from 'body-parser';
 import { connectDB } from './config/db.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
+import compression from 'compression';
 
 // Load environment variables from .env file.
 dotenv.config();
@@ -19,12 +20,12 @@ const PORT = process.env.PORT || 3000;
 // cors middleware to allow cross-origin requests.
 app.use(cors());
 
-// Middleware to parse JSON request bodies.
-// app.use(express.json());
+// Compression middleware - reduces response size by 60-80%
+app.use(compression());
 
-// Body parser middleware to handle large request bodies.
-app.use(bodyParser.json({ limit: "15mb", extended: true}));
-app.use(bodyParser.urlencoded({ limit: "15mb", extended: true}));
+// Middleware to parse JSON request bodies with reasonable size limits.
+app.use(bodyParser.json({ limit: "5mb" }));
+app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
 app.use(rateLimiter);
 
 // Use routes for vehicles, users, and company stats.
