@@ -2,7 +2,49 @@
 
 // A new function to get the total company stats
 import CompanyStats from '../models/companyStats.js';
-import { authenticateUser } from '../middleware/authUser.js';
+import { authenticateUser } from '../helpers/authHelper.js';
+import mongoose from 'mongoose';
+
+// Cache for database stats
+let dbStatsCache = {
+    data: null,
+    lastFetched: null,
+    cacheExpiry: 15 * 60 * 1000 // 5 minutes in milliseconds
+};
+
+const getDatabaseStats = async () => {
+    const now = Date.now();
+    
+    // Return cached data if it's still valid
+    if (dbStatsCache.data && dbStatsCache.lastFetched && (now - dbStatsCache.lastFetched) < dbStatsCache.cacheExpiry) {
+        return dbStatsCache.data;
+    }
+
+    // Fetch fresh data from MongoDB
+    const db = mongoose.connection.db;
+    const dbStats = await db.stats();
+    
+    // Calculate total database size in MB (dataSize + indexes)
+    const dataSizeMB = dbStats.dataSize / (1024 * 1024);
+    const indexSizeMB = Object.values(dbStats.indexSizes || {}).reduce((sum, size) => sum + size, 0) / (1024 * 1024);
+    const totalDatabaseSizeMB = dataSizeMB + indexSizeMB;
+    const databaseSizeLimit = 512; // MongoDB Atlas 512MB limit
+    const percentageUsed = ((totalDatabaseSizeMB / databaseSizeLimit) * 100).toFixed(2);
+
+    const statsData = {
+        totalDatabaseSizeMB: parseFloat(totalDatabaseSizeMB.toFixed(2)),
+        dataSizeMB: parseFloat(dataSizeMB.toFixed(2)),
+        indexSizeMB: parseFloat(indexSizeMB.toFixed(2)),
+        databaseSizeLimit,
+        databasePercentageUsed: parseFloat(percentageUsed)
+    };
+
+    // Update cache
+    dbStatsCache.data = statsData;
+    dbStatsCache.lastFetched = now;
+
+    return statsData;
+};
 
 export const getCompanyStats = async (req, res) => {
     try {
@@ -10,13 +52,21 @@ export const getCompanyStats = async (req, res) => {
         if (!checkAuthenticatedUser) return;
         const companyStats = await CompanyStats.findOne();
 
-        // Include the total size used in the database in the response
-        
-
         if (!companyStats) {
             return res.status(404).json({ message: 'Company stats not found' });
         }
-        res.status(200).json({ companyStats });
+
+        // Get cached or fresh database stats
+        const dbStats = await getDatabaseStats();
+
+        // Add database size information to company stats
+        const statsWithDBSize = {
+            ...companyStats.toObject(),
+            ...dbStats,
+            vehiclesAddedThisMonth: companyStats.vehiclesAddedThisMonth
+        };
+
+        res.status(200).json({ message: 'Company stats retrieved successfully', data: statsWithDBSize });
     } catch (error) {
         console.error('Error fetching company stats:', error);
         res.status(500).json({ message: 'Server error', error });

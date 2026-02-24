@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import vehicleRoutes from './routes/vehicleRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import companyStatsRoutes from './routes/companyStatsRoutes.js';
 import bodyParser from 'body-parser';
 import { connectDB } from './config/db.js';
 import { rateLimiter } from './middleware/rateLimiter.js';
@@ -26,9 +27,10 @@ app.use(bodyParser.json({ limit: "15mb", extended: true}));
 app.use(bodyParser.urlencoded({ limit: "15mb", extended: true}));
 app.use(rateLimiter);
 
-// Use routes for vehicles and users.
+// Use routes for vehicles, users, and company stats.
 app.use("/api/vehicle", vehicleRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/company", companyStatsRoutes);
 
 // Start the server after successful database connection.
 connectDB().then(() => {
