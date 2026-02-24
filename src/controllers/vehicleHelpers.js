@@ -142,7 +142,7 @@ export const getNewVehicleFullData = async (registration, res, confirmedVehicleD
 
     lookupReserved = true;
     // CAR_DETAILS_API_KEY CAR_DETAILS_TEST_KEY
-    const carDetailsURL = `${process.env.CAR_DETAILS_API_URL}${process.env.CAR_DETAILS_SPEC}?apikey=${process.env.CAR_DETAILS_TEST_KEY}&vrm=${registration}`;
+    const carDetailsURL = `${process.env.CAR_DETAILS_API_URL}${process.env.CAR_DETAILS_SPEC}?apikey=${process.env.CAR_DETAILS_API_KEY}&vrm=${registration}`;
 
     console.log('Requesting full vehicle details from external API for registration number:', registration);
     const { data } = await axios.get(carDetailsURL);
