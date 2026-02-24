@@ -15,6 +15,8 @@ let dbStatsCache = {
 const getDatabaseStats = async () => {
     const now = Date.now();
     
+    console.log('Checking database stats cache...');
+
     // Return cached data if it's still valid
     if (dbStatsCache.data && dbStatsCache.lastFetched && (now - dbStatsCache.lastFetched) < dbStatsCache.cacheExpiry) {
         return dbStatsCache.data;
