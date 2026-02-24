@@ -1108,7 +1108,7 @@ export const getVehiclesHTML = async (req, res) => {
             }
 
             .vehicle-card {
-              background: white;
+              background: rgb(254, 248, 242);
               border-radius: 8px;
               margin-bottom: 15px;
               box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -1177,15 +1177,15 @@ export const getVehiclesHTML = async (req, res) => {
 
             .details-container {
               padding: 20px;
-              background: #f8f9ff;
+              background: rgb(254, 248, 242);
             }
 
             .details-section {
               margin-bottom: 15px;
-              border: 1px solid #e0e0e0;
+              border: 1px solid #ddd;
               border-radius: 6px;
               overflow: hidden;
-              background: white;
+              background: rgb(254, 248, 242);
             }
 
             .details-section:last-child {
@@ -1197,7 +1197,7 @@ export const getVehiclesHTML = async (req, res) => {
               justify-content: space-between;
               align-items: center;
               padding: 12px 15px;
-              background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+              background: #f5ede3;
               cursor: pointer;
               user-select: none;
               border-bottom: 1px solid #e0e0e0;
@@ -1205,7 +1205,7 @@ export const getVehiclesHTML = async (req, res) => {
             }
 
             .section-header:hover {
-              background: linear-gradient(135deg, #eff2f7 0%, #e0e5ef 100%);
+              background: #ede1d5;
             }
 
             .section-header h4 {
@@ -1271,8 +1271,8 @@ export const getVehiclesHTML = async (req, res) => {
             }
 
             .mot-test {
-              background: white;
-              border: 1px solid #e0e0e0;
+              background: rgb(254, 248, 242);
+              border: 1px solid #ddd;
               border-radius: 4px;
               overflow: hidden;
             }
@@ -1294,7 +1294,7 @@ export const getVehiclesHTML = async (req, res) => {
               justify-content: space-between;
               align-items: center;
               padding: 12px 15px;
-              background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+              background: #f5ede3;
               cursor: pointer;
               user-select: none;
               border-left: 4px solid #667eea;
@@ -1302,7 +1302,7 @@ export const getVehiclesHTML = async (req, res) => {
             }
 
             .mot-header:hover {
-              background: linear-gradient(135deg, #eff2f7 0%, #e0e5ef 100%);
+              background: #ede1d5;
             }
 
             .mot-header span {
@@ -1312,7 +1312,7 @@ export const getVehiclesHTML = async (req, res) => {
 
             .mot-details-container {
               padding: 12px 15px;
-              background: #f8f9ff;
+              background: rgb(254, 248, 242);
             }
 
             .mot-details {
@@ -1562,5 +1562,50 @@ export const getVehiclesHTML = async (req, res) => {
         </body>
       </html>
     `);
+  }
+};
+
+export const getVehiclesJSON = async (req, res) => {
+  try {
+    const vehicles = await Vehicle.find({ isDeleted: false }).sort({ createdAt: -1 });
+    
+    if (!vehicles || vehicles.length === 0) {
+      return res.status(200).json({ 
+        message: 'No vehicles found in the database',
+        vehicles: [] 
+      });
+    }
+
+    // Process vehicles to hide VIN and remove custom notes
+    const processedVehicles = vehicles.map(vehicle => {
+      const vehicleObj = vehicle.toObject();
+      
+      // Hide VIN in main object
+      if (vehicleObj.vin) {
+        vehicleObj.vin = 'HIDDEN';
+      }
+      
+      // Hide VIN in VehicleRegistration sub-object
+      if (vehicleObj.VehicleRegistration && vehicleObj.VehicleRegistration.Vin) {
+        vehicleObj.VehicleRegistration.Vin = 'HIDDEN';
+      }
+      
+      // Remove custom notes
+      delete vehicleObj.customNotes;
+      
+      return vehicleObj;
+    });
+
+    res.status(200).json({ 
+      message: 'Vehicles retrieved successfully',
+      totalVehicles: processedVehicles.length,
+      vehicles: processedVehicles 
+    });
+  } catch (error) {
+    console.error('Error getting vehicles JSON:', error.message);
+    res.status(500).json({ 
+      message: 'Error retrieving vehicles',
+      error: error.message 
+    });
   }
 };
