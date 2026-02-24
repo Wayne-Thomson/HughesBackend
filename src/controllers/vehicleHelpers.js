@@ -131,7 +131,7 @@ export const getNewVehicleFullData = async (registration, res, confirmedVehicleD
         vehiclesAddedThisMonth: { $lt: 100 }
       },
       {
-        $inc: { vehiclesAddedThisMonth: 1 }
+        $inc: { vehiclesAddedThisMonth: 1, totalVehicles: 1 }
       },
       { new: true }
     );
@@ -199,13 +199,19 @@ export const getNewVehicleFullData = async (registration, res, confirmedVehicleD
         throw error;
     }
 
+    try {
+
+    } catch (error) {
+        
+    }
+
     return res.status(200).json({ message: 'Vehicle details fetched and saved successfully', vehicle: savedVehicleTwo });
   } catch (error) {
     if (lookupReserved) {
       try {
         await CompanyStats.findOneAndUpdate(
           {},
-          { $inc: { vehiclesAddedThisMonth: -1 } },
+          { $inc: { vehiclesAddedThisMonth: -1, totalVehicles: -1 } },
           { sort: { createdAt: 1 } }
         );
       } catch (rollbackError) {

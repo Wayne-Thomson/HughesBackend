@@ -27,10 +27,6 @@ export const getVehicles = async (req, res) => {
     const checkAuthenticatedUser = await authenticateUser(req, res);
     if (!checkAuthenticatedUser) return;
 
-    // await deleteAllVehicles(req, res); // Call the function to delete all vehicles and return the response
-
-    // return await newCreateTestDataSet(req, res); // Call the new function to create the test dataset and return the response  
-
     const vehicles = await Vehicle.find({ isDeleted: false }).sort({ createdAt: -1 });
     if (!vehicles) {
       return res.status(404).json({ message: 'No vehicles found' });
