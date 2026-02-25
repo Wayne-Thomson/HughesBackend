@@ -22,6 +22,12 @@ const handleError = (res, error, message) => {
   res.status(500).json({ message, error: error?.message });
 };
 
+/**
+ * Retrieves all non-deleted vehicles from the database.
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object containing array of vehicles
+ */
 export const getVehicles = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
@@ -38,6 +44,13 @@ export const getVehicles = async (req, res) => {
   };
 };
 
+
+/**
+ * Retrieves all soft-deleted vehicles from the database.
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object containing array of deleted vehicles
+ */
 export const getDeletedVehicles = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
@@ -52,6 +65,12 @@ export const getDeletedVehicles = async (req, res) => {
 
 
 
+/**
+ * Retrieves a single vehicle by its ID.
+ * @param {Object} req - Express request object with vehicle ID in params
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object containing the vehicle details
+ */
 export const getVehicle = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
@@ -68,6 +87,12 @@ export const getVehicle = async (req, res) => {
   };
 };
 
+/**
+ * Looks up vehicle data from the DVLA API using registration or VIN.
+ * @param {Object} req - Express request object with registration or vin query params
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object containing vehicle data from DVLA API
+ */
 export const lookupVehicle = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
@@ -95,6 +120,13 @@ export const lookupVehicle = async (req, res) => {
   }
 };
 
+/**
+ * Adds a new vehicle to the database with full vehicle details.
+ * Fetches additional data from external API and saves complete vehicle record.
+ * @param {Object} req - Express request object with vehicleDetails in body
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object containing the newly created vehicle
+ */
 export const addNewVehicle = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
@@ -112,6 +144,12 @@ export const addNewVehicle = async (req, res) => {
   }
 };
 
+/**
+ * Updates a vehicle's custom notes field.
+ * @param {Object} req - Express request object with vehicle ID in params and customNotes in body
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object containing the updated vehicle
+ */
 export const updateAVehicle = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
@@ -132,6 +170,12 @@ export const updateAVehicle = async (req, res) => {
   };
 };
 
+/**
+ * Deletes a vehicle using soft delete (marks as deleted) or hard delete (permanent removal).
+ * @param {Object} req - Express request object with vehicle ID in params and hardDelete flag in body
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object containing the deleted vehicle
+ */
 export const deleteAVehicle = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
@@ -156,6 +200,12 @@ export const deleteAVehicle = async (req, res) => {
   };
 };
 
+/**
+ * Permanently deletes a vehicle from the database (cannot be restored).
+ * @param {Object} req - Express request object with vehicle ID in params
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object confirming permanent deletion
+ */
 export const hardDeleteAVehicle = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
@@ -172,6 +222,12 @@ export const hardDeleteAVehicle = async (req, res) => {
   };
 };
 
+/**
+ * Restores a soft-deleted vehicle, making it visible in the active vehicles list.
+ * @param {Object} req - Express request object with vehicle ID in params
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object containing the restored vehicle
+ */
 export const restoreAVehicle = async (req, res) => {
   try {
     const checkAuthenticatedUser = await authenticateUser(req, res);
@@ -188,6 +244,13 @@ export const restoreAVehicle = async (req, res) => {
   };
 };
 
+/**
+ * Generates and returns all vehicles as formatted HTML with collapsible sections.
+ * Includes registration details, dimensions, engine info, performance, MOT tests, etc.
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {String} HTML page containing all vehicle information
+ */
 export const getVehiclesHTML = async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ isDeleted: false }).sort({ createdAt: -1 });
@@ -946,6 +1009,13 @@ export const getVehiclesHTML = async (req, res) => {
   }
 };
 
+/**
+ * Returns all non-deleted vehicles as JSON.
+ * Hides sensitive data (VIN) and removes custom notes from public response.
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON object containing array of vehicles and metadata
+ */
 export const getVehiclesJSON = async (req, res) => {
   try {
     const vehicles = await Vehicle.find({ isDeleted: false }).sort({ createdAt: -1 });

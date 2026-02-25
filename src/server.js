@@ -37,7 +37,7 @@ app.use("/api/company", companyStatsRoutes);
 connectDB().then(() => {
   console.log("Connected to the database successfully.");
   app.listen(PORT, () => {
-    console.log(`Server running on port: ${PORT}`);
+    console.log(`Running on port: ${PORT}`);
   });
 }).catch((error) => {
   console.error("Database connection failed:", error);
