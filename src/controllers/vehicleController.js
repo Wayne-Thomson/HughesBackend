@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import Vehicle from '../models/VehicleTwo.js';
 import User from '../models/User.js';
+import VehicleImage from '../models/vehicleImages.js';
 import { authenticateUser } from '../helpers/authHelper.js';
 import { getNewVehicleFullData, createVehicleREG, createVehicleVIN } from './vehicleHelpers.js';
 
@@ -187,8 +188,16 @@ export const deleteAVehicle = async (req, res) => {
     let vehicle;
     if (hardDelete) {
       vehicle = await Vehicle.findByIdAndDelete({ _id: id });
+      // Delete related vehicle image when hard deleting
+      if (vehicle) {
+        await VehicleImage.deleteOne({ vehicle: id });
+      }
     } else {
       vehicle = await Vehicle.findOneAndUpdate({ _id: id }, { isDeleted: true, deletedBy: null, dateDeleted: new Date() }, { new: true });
+      // Delete related vehicle image when soft deleting (disabling)
+      if (vehicle) {
+        await VehicleImage.deleteOne({ vehicle: id });
+      }
     }
     if (!vehicle) {
       return res.status(404).json({ message: 'Vehicle not found' });
@@ -216,6 +225,8 @@ export const hardDeleteAVehicle = async (req, res) => {
     if (!vehicle) {
       return res.status(404).json({ message: 'Vehicle not found' });
     };
+    // Delete related vehicle image when permanently deleting vehicle
+    await VehicleImage.deleteOne({ vehicle: id });
     res.status(200).json({ message: 'Vehicle permanently deleted successfully', vehicle: vehicle });
   } catch (error) {
     handleError(res, error, 'Error deleting vehicle');
