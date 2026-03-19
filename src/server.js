@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import vehicleRoutes from './routes/vehicleRoutes.js';
+import itemsRoutes from './routes/itemsRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import companyStatsRoutes from './routes/companyStatsRoutes.js';
 import bodyParser from 'body-parser';
@@ -28,8 +29,9 @@ app.use(bodyParser.json({ limit: "11mb" }));
 app.use(bodyParser.urlencoded({ limit: "11mb", extended: true }));
 app.use(rateLimiter);
 
-// Use routes for vehicles, users, and company stats.
+// Use routes for vehicles, items, users, and company stats.
 app.use("/api/vehicle", vehicleRoutes);
+app.use("/api/item", itemsRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/company", companyStatsRoutes);
 
