@@ -24,8 +24,8 @@ app.use(cors());
 app.use(compression());
 
 // Middleware to parse JSON request bodies with reasonable size limits.
-app.use(bodyParser.json({ limit: "5mb" }));
-app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
+app.use(bodyParser.json({ limit: "11mb" }));
+app.use(bodyParser.urlencoded({ limit: "11mb", extended: true }));
 app.use(rateLimiter);
 
 // Use routes for vehicles, users, and company stats.
