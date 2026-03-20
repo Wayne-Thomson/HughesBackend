@@ -156,6 +156,14 @@ const colourChangeDetailsSchema = new mongoose.Schema({
   DateOfLastColourChange: { type: Date, required: false }
 }, { _id: false });
 
+const plateChangeSchema = new mongoose.Schema({
+  CurrentVRM: { type: String, required: false },
+  TransferType: { type: String, required: false },
+  DateOfReceipt: { type: Date, required: false },
+  PreviousVRM: { type: String, required: false },
+  DateOfTransaction: { type: Date, required: false }
+}, { _id: false });
+
 const vehicleHistorySchema = new mongoose.Schema({
   V5CCertificateCount: { type: Number, required: false },
   PlateChangeCount: { type: Number, required: false },
@@ -166,7 +174,7 @@ const vehicleHistorySchema = new mongoose.Schema({
   ColourChangeCount: { type: Number, required: false },
   ColourChangeList: [{ type: String, required: false }],
   KeeperChangesList: [{ type: keeperChangesSchema, required: false }],
-  PlateChangeList: [{ type: String, required: false }],
+  PlateChangeList: [{ type: plateChangeSchema, required: false }],
   VicList: [{ type: String, required: false }],
   ColourChangeDetails: { type: colourChangeDetailsSchema, required: false }
 }, { _id: false });
