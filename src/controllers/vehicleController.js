@@ -133,13 +133,60 @@ export const addNewVehicle = async (req, res) => {
     const checkAuthenticatedUser = await authenticateUser(req, res);
     if (!checkAuthenticatedUser) return;
 
-    const { vehicleDetails } = req.body;
-    if (!vehicleDetails?.registration) {
-      return res.status(404).json({ message: 'Vehicle registration not found in request payload' });
-    }
+    const { isCustom, customVehicle, vehicleDetails } = req.body;
 
-    // Get full vehicle details and save to database
-    return await getNewVehicleFullData(vehicleDetails.registration, res, vehicleDetails);
+    if (isCustom) {
+      // Handle custom vehicle creation
+      if (!customVehicle || (!customVehicle.registration && !customVehicle.vin && !customVehicle.year && !customVehicle.make && !customVehicle.model)) {
+        return res.status(400).json({ message: 'At least one field must be provided for custom vehicle' });
+      }
+
+      // Create a new custom vehicle object with null for unknown fields
+      const newCustomVehicle = {
+        registration: customVehicle.registration || null,
+        vin: customVehicle.vin || null,
+        make: customVehicle.make || null,
+        model: customVehicle.model || null,
+        primaryColour: null,
+        engineSize: null,
+        fuelType: null,
+        manufactureDate: customVehicle.year ? `${customVehicle.year}-01-01` : null,
+        registrationDate: null,
+        firstUsedDate: null,
+        engineCode: null,
+        series: null,
+        seriesDescription: null,
+        country: null,
+        hasOutstandingRecall: null,
+        motTests: [],
+        customNotes: "",
+        generation: null,
+        isDeleted: false,
+        dateDeleted: null,
+        deletedBy: null,
+        createdBy: null,
+        makeModel: customVehicle.make && customVehicle.model ? `${customVehicle.make} ${customVehicle.model}` : null
+      };
+
+      // Save the custom vehicle to database
+      let savedVehicle;
+      try {
+        savedVehicle = await Vehicle.create(newCustomVehicle);
+      } catch (error) {
+        console.error('Error saving custom vehicle to database:', error);
+        throw error;
+      }
+
+      return res.status(200).json({ message: 'Custom vehicle added successfully', vehicle: savedVehicle });
+    } else {
+      // Handle lookup-based vehicle creation
+      if (!vehicleDetails?.registration) {
+        return res.status(404).json({ message: 'Vehicle registration not found in request payload' });
+      }
+
+      // Get full vehicle details and save to database
+      return await getNewVehicleFullData(vehicleDetails.registration, res, vehicleDetails);
+    }
   } catch (error) {
     handleError(res, error, 'Error adding new vehicle');
   }
